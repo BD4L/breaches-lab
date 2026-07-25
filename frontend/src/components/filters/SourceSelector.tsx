@@ -199,7 +199,7 @@ export function SourceSelector({ category, onClose, onSourcesSelected, selectedS
                           ? 'border-blue-500 bg-blue-500' 
                           : 'border-gray-300 dark:border-gray-600'
                       }`}>
-                        {isSelected && <span className="text-white text-xs"></span>}
+                        {isSelected && <svg className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 111.4-1.4l3.8 3.8 6.8-6.8a1 1 0 011.4 0z" clipRule="evenodd" /></svg>}
                       </div>
                       <div>
                         <div className="font-medium text-gray-900 dark:text-white">

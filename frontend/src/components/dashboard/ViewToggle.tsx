@@ -25,7 +25,6 @@ export function ViewToggle({ currentView, onViewChange, breachCount, newsCount, 
             : 'hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
         }`}
       >
-        <span></span>
         <span>Breach Notifications</span>
         {breachCount !== undefined && (
           <span className="ml-1 px-2 py-0.5 text-xs bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-full">
@@ -44,7 +43,6 @@ export function ViewToggle({ currentView, onViewChange, breachCount, newsCount, 
             : 'hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
         }`}
       >
-        <span></span>
         <span>Cybersecurity News</span>
         {newsCount !== undefined && (
           <span className="ml-1 px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full">
@@ -63,7 +61,6 @@ export function ViewToggle({ currentView, onViewChange, breachCount, newsCount, 
             : 'hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
         }`}
       >
-        <span></span>
         <span>Saved Breaches</span>
         {savedCount !== undefined && (
           <span className="ml-1 px-2 py-0.5 text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full">
@@ -82,7 +79,6 @@ export function ViewToggle({ currentView, onViewChange, breachCount, newsCount, 
             : 'hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
         }`}
       >
-        <span></span>
         <span>AI Reports</span>
         {reportsCount !== undefined && (
           <span className="ml-1 px-2 py-0.5 text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full">

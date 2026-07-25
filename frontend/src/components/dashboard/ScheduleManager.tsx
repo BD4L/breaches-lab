@@ -140,7 +140,6 @@ export function ScheduleManager({ onClose }: ScheduleManagerProps) {
         {/* Warning Notice */}
         <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
           <div className="flex items-start space-x-2">
-            <span className="text-yellow-600 dark:text-yellow-400"></span>
             <div>
               <h3 className="font-medium text-yellow-800 dark:text-yellow-200">
                 GitHub Actions Integration Required

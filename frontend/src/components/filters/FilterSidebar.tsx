@@ -369,7 +369,6 @@ export function FilterSidebar({ isOpen, onClose, currentView, onFiltersChange }:
               onClick={applyBreachesOfTheDayFilter}
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition-all duration-200 flex items-center justify-center space-x-2"
             >
-              <span className="text-lg"></span>
               <span>Breaches Of The Day</span>
             </Button>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
@@ -440,7 +439,6 @@ export function FilterSidebar({ isOpen, onClose, currentView, onFiltersChange }:
                 {minAffected > 0 && (
                   <div className="p-3 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
                     <div className="flex items-center space-x-2">
-                      <span className="text-lg"></span>
                       <div>
                         <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
                           Alert Threshold Set
@@ -659,7 +657,7 @@ export function FilterSidebar({ isOpen, onClose, currentView, onFiltersChange }:
                                     ? 'border-blue-500 bg-blue-500'
                                     : 'border-gray-300 dark:border-gray-600'
                                 }`}>
-                                  {isSelected && <span className="text-white text-xs"></span>}
+                                  {isSelected && <svg className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 111.4-1.4l3.8 3.8 6.8-6.8a1 1 0 011.4 0z" clipRule="evenodd" /></svg>}
                                 </div>
                                 <span className="text-sm text-gray-900 dark:text-white">
                                   {source.name}

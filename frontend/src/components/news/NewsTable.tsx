@@ -202,7 +202,7 @@ export function NewsTable({ filters }: NewsTableProps) {
     return (
       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
         <div className="flex items-center">
-          <span className="text-red-500 mr-2"></span>
+          <svg className="w-5 h-5 text-red-500 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9 9a1 1 0 012 0v4a1 1 0 11-2 0V9zm1-5a1.25 1.25 0 100 2.5A1.25 1.25 0 0010 4z" clipRule="evenodd" /></svg>
           <div>
             <h3 className="text-red-800 dark:text-red-200 font-medium">Error Loading News</h3>
             <p className="text-red-600 dark:text-red-300 text-sm mt-1">{error}</p>

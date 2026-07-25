@@ -2,11 +2,19 @@ name: Deploy Frontend to GitHub Pages
 
 on:
   push:
-    branches: [ main, frontend ]
-    paths: [ 'frontend/**' ]
+    # Only main deploys. The dormant 'frontend' branch used to be able to publish here too,
+    # which meant whichever branch was pushed last silently became the live site.
+    branches: [ main ]
+    # This workflow file is included so that changes to the build itself redeploy. Without it,
+    # editing the build without touching frontend/ leaves the published bundle stale.
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
   pull_request:
     branches: [ main ]
-    paths: [ 'frontend/**' ]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
   workflow_dispatch:
 
 permissions:
@@ -21,6 +29,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,7 +50,19 @@ jobs:
         env:
           PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
           PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
-          PUBLIC_GITHUB_TOKEN: ${{ secrets.PUBLIC_GITHUB_TOKEN }}
+          # Deployment target. Unset in production, which falls back to the production values
+          # in astro.config.mjs. The staging mirror sets these as repository variables.
+          PUBLIC_BASE_PATH: ${{ vars.PUBLIC_BASE_PATH }}
+          PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
+          # PUBLIC_GITHUB_TOKEN is deliberately NOT passed here.
+          #
+          # Astro inlines every PUBLIC_* variable into the client bundle at build time, so
+          # supplying a personal access token published it in plain text to every visitor of
+          # the site. There is no way to hand a browser a GitHub token and keep it secret.
+          #
+          # This disables the in-page scraper controls, which will report that no token is
+          # configured. Restoring that feature safely requires a server-side proxy holding the
+          # credential, not a PUBLIC_ variable.
         run: |
           cd frontend
           npm run build
@@ -62,6 +83,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
+    timeout-minutes: 10
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
