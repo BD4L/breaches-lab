@@ -10,11 +10,11 @@ interface BreachDetailProps {
 
 export function BreachDetail({ breach }: BreachDetailProps) {
   const timelineEvents = [
-    { label: 'Incident Discovered', date: breach.incident_discovery_date, icon: '🔍' },
-    { label: 'Breach Occurred', date: breach.breach_date, icon: '⚠️' },
-    { label: 'Reported', date: breach.reported_date, icon: '📢' },
-    { label: 'Published', date: breach.publication_date, icon: '📰' },
-    { label: 'Found by Scraper', date: breach.scraped_at, icon: '🤖' },
+    { label:'Incident Discovered', date: breach.incident_discovery_date, icon:''},
+    { label:'Breach Occurred', date: breach.breach_date, icon:''},
+    { label:'Reported', date: breach.reported_date, icon:''},
+    { label:'Published', date: breach.publication_date, icon:''},
+    { label:'Found by Scraper', date: breach.scraped_at, icon:''},
   ].filter(event => event.date)
 
   return (
@@ -42,7 +42,7 @@ export function BreachDetail({ breach }: BreachDetailProps) {
               onClick={() => window.open(breach.notice_document_url!, '_blank')}
               className="border-gray-200 dark:border-gray-600 hover:bg-teal-50 dark:hover:bg-teal-900/20"
             >
-              📄 Official Notice
+               Official Notice
             </Button>
           )}
           {breach.item_url && (
@@ -52,7 +52,7 @@ export function BreachDetail({ breach }: BreachDetailProps) {
               onClick={() => window.open(breach.item_url!, '_blank')}
               className="border-gray-200 dark:border-gray-600 hover:bg-purple-50 dark:hover:bg-purple-900/20"
             >
-              🔗 View Source
+               View Source
             </Button>
           )}
         </div>

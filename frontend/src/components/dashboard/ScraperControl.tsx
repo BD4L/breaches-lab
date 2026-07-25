@@ -29,7 +29,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
   const defaultScraperGroups: ScraperGroup[] = [
     {
       id: 'government-scrapers',
-      name: '🏢 Government & Federal Scrapers',
+      name:'Government & Federal Scrapers',
       description: 'SEC EDGAR 8-K, HHS OCR Breach Portal',
       scrapers: ['SEC EDGAR 8-K', 'HHS OCR'],
       schedule: 'Every 30 minutes',
@@ -38,7 +38,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
     },
     {
       id: 'state-ag-group-1',
-      name: '🏛️ State AG Group 1 (DE, CA, WA, HI)',
+      name:'State AG Group 1 (DE, CA, WA, HI)',
       description: 'Delaware, California, Washington, Hawaii',
       scrapers: ['Delaware AG', 'California AG', 'Washington AG', 'Hawaii AG'],
       schedule: 'Every 30 minutes',
@@ -47,7 +47,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
     },
     {
       id: 'state-ag-group-2',
-      name: '🏛️ State AG Group 2 (IN, IA, ME)',
+      name:'State AG Group 2 (IN, IA, ME)',
       description: 'Indiana, Iowa, Maine',
       scrapers: ['Indiana AG', 'Iowa AG', 'Maine AG'],
       schedule: 'Every 30 minutes',
@@ -56,7 +56,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
     },
     {
       id: 'state-ag-group-3',
-      name: '🏛️ State AG Group 3 (MA, MT, NH, NJ)',
+      name:'State AG Group 3 (MA, MT, NH, NJ)',
       description: 'Massachusetts, Montana, New Hampshire, New Jersey',
       scrapers: ['Massachusetts AG', 'Montana AG', 'New Hampshire AG', 'New Jersey AG'],
       schedule: 'Every 30 minutes',
@@ -65,7 +65,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
     },
     {
       id: 'state-ag-group-4',
-      name: '🏛️ State AG Group 4 (ND, OK, VT, WI, TX)',
+      name:'State AG Group 4 (ND, OK, VT, WI, TX)',
       description: 'North Dakota, Oklahoma, Vermont, Wisconsin, Texas',
       scrapers: ['North Dakota AG', 'Oklahoma Cyber', 'Vermont AG', 'Wisconsin DATCP', 'Texas AG'],
       schedule: 'Every 30 minutes',
@@ -74,7 +74,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
     },
     {
       id: 'news-and-api-scrapers',
-      name: '📰 News & API Scrapers',
+      name:'News & API Scrapers',
       description: 'BreachSense, Cybersecurity News, Company IR, HIBP API',
       scrapers: ['BreachSense', 'Cybersecurity News RSS', 'Company IR', 'HIBP API'],
       schedule: 'Every 30 minutes',
@@ -83,7 +83,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
     },
     {
       id: 'problematic-scrapers',
-      name: '⚠️ Problematic Scrapers (MD)',
+      name:'Problematic Scrapers (MD)',
       description: 'Maryland AG (known website issues)',
       scrapers: ['Maryland AG'],
       schedule: 'Every 30 minutes (Continue on Error)',
@@ -281,15 +281,15 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
       console.error('Workflow trigger error details:', error)
 
       if (errorMessage.includes('GitHub token not configured')) {
-        alert('❌ GitHub token not configured. Please add PUBLIC_GITHUB_TOKEN to repository secrets and redeploy.')
+        alert('GitHub token not configured. Please add PUBLIC_GITHUB_TOKEN to repository secrets and redeploy.')
       } else if (errorMessage.includes('422')) {
-        alert('❌ Cannot run workflow: The workflow may be disabled or have invalid inputs. Check that paralell.yml is enabled and has proper workflow_dispatch configuration.')
+        alert('Cannot run workflow: The workflow may be disabled or have invalid inputs. Check that paralell.yml is enabled and has proper workflow_dispatch configuration.')
       } else if (errorMessage.includes('Workflow') && errorMessage.includes('not found')) {
-        alert(`❌ Workflow not found: ${errorMessage}`)
+        alert(`Workflow not found: ${errorMessage}`)
       } else if (errorMessage.includes('403')) {
-        alert('❌ Permission denied. Check if GitHub token has workflow permissions.')
+        alert('Permission denied. Check if GitHub token has workflow permissions.')
       } else {
-        alert(`❌ Failed to trigger workflow: ${errorMessage}`)
+        alert(`Failed to trigger workflow: ${errorMessage}`)
       }
     } finally {
       setTriggering(null)
@@ -307,10 +307,10 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'running': return '🔄'
-      case 'success': return '✅'
-      case 'failed': return '❌'
-      default: return '⏸️'
+      case'running': return''
+      case'success': return''
+      case'failed': return''
+      default: return''
     }
   }
 
@@ -343,7 +343,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
             </p>
           </div>
           <Button variant="outline" onClick={onClose}>
-            ✕ Close
+             Close
           </Button>
         </div>
 
@@ -357,7 +357,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
               onClick={() => triggerWorkflow('all')}
               disabled={!!triggering}
             >
-              🚀 Run All Scrapers
+               Run All Scrapers
             </Button>
             <Button
               variant="outline"
@@ -365,7 +365,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
               onClick={() => triggerWorkflow('government-scrapers')}
               disabled={!!triggering}
             >
-              🏢 Government & Federal
+               Government & Federal
             </Button>
             <Button
               variant="outline"
@@ -373,7 +373,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
               onClick={() => triggerWorkflow('news-and-api-scrapers')}
               disabled={!!triggering}
             >
-              📰 News & API
+               News & API
             </Button>
             <Button
               variant="outline"
@@ -381,7 +381,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
               onClick={() => triggerWorkflow('problematic-scrapers')}
               disabled={!!triggering}
             >
-              ⚠️ Problematic (MD)
+               Problematic (MD)
             </Button>
           </div>
         </div>
@@ -405,7 +405,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
                   onClick={() => triggerWorkflow(group.id)}
                   disabled={!group.canTrigger || triggering === group.id || group.status === 'running'}
                 >
-                  {triggering === group.id ? '⏳ Starting...' : '▶️ Run Now'}
+                  {triggering === group.id ?'Starting...':'▶ Run Now'}
                 </Button>
               </div>
               
@@ -434,7 +434,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
         {/* Schedule Management */}
         <div className="mt-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
           <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
-            📅 Schedule Management & Frequency Control
+             Schedule Management & Frequency Control
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
             Current schedules and manual frequency controls:
@@ -464,7 +464,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
               size="sm"
               onClick={() => setShowScheduleManager(true)}
             >
-              📝 Manage Schedules
+               Manage Schedules
             </Button>
             <Button
               variant="outline"
@@ -472,7 +472,7 @@ export function ScraperControl({ onClose }: ScraperControlProps) {
               onClick={() => triggerWorkflow('all')}
               disabled={!!triggering}
             >
-              🔄 Run All Now
+               Run All Now
             </Button>
           </div>
         </div>

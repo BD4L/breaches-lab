@@ -193,13 +193,13 @@ def fix_california_ag_data_quality():
                     update_response = supabase_client.client.table("scraped_items").update(update_data).eq("id", record_id).execute()
                     if update_response.data:
                         fixed_count += 1
-                        logger.info(f"  ✅ Updated record {record_id} with {list(update_data.keys())}")
+                        logger.info(f"Updated record {record_id} with {list(update_data.keys())}")
                     else:
-                        logger.warning(f"  ❌ Failed to update record {record_id}")
+                        logger.warning(f"Failed to update record {record_id}")
                 except Exception as e:
-                    logger.error(f"  ❌ Error updating record {record_id}: {e}")
+                    logger.error(f"Error updating record {record_id}: {e}")
             else:
-                logger.info(f"  ⏭️  No fixes needed for record {record_id}")
+                logger.info(f"No fixes needed for record {record_id}")
 
         logger.info(f"Data quality fix completed. Fixed {fixed_count} out of {len(records)} records.")
 
@@ -212,7 +212,7 @@ def fix_california_ag_data_quality():
 if __name__ == "__main__":
     success = fix_california_ag_data_quality()
     if success:
-        logger.info("✅ California AG data quality fix completed successfully!")
+        logger.info("California AG data quality fix completed successfully!")
     else:
-        logger.error("❌ California AG data quality fix failed!")
+        logger.error("California AG data quality fix failed!")
         sys.exit(1)

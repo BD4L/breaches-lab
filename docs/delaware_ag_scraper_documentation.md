@@ -93,8 +93,8 @@ REQUEST_HEADERS = {
   - Concatenated dates (e.g., "04/09/202504/21/2025")
 - **Fallback**: Preserve original text when parsing fails
 - **Examples**:
-  - `"Within 1 week"` → stored as-is
-  - `"Ransomware detected February 16, 2023"` → preserved exactly
+  -`"Within 1 week"`stored as-is
+  -`"Ransomware detected February 16, 2023"`preserved exactly
 
 #### Affected Individuals Parsing
 - **Method**: `parse_affected_individuals()`

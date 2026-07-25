@@ -62,13 +62,13 @@ export function BreachTable({ filters, onSavedCountChange }: BreachTableProps) {
   // Load saved breach status for current data
   useEffect(() => {
     const loadSavedStatus = async () => {
-      console.log('🔍 Loading saved status for', data.length, 'breaches')
+      console.log('Loading saved status for', data.length,'breaches')
       const savedStatus: Record<number, any> = {}
       for (const breach of data) {
         try {
           const result = await checkIfBreachSaved(breach.id)
           if (result.data && !result.error) {
-            console.log('✅ Found saved breach:', breach.id, result.data)
+            console.log('Found saved breach:', breach.id, result.data)
             savedStatus[breach.id] = {
               id: result.data.id, // This is the saved_breaches.id
               collection_name: result.data.collection_name,
@@ -77,10 +77,10 @@ export function BreachTable({ filters, onSavedCountChange }: BreachTableProps) {
             }
           }
         } catch (error) {
-          console.error('❌ Error checking saved status for breach', breach.id, error)
+          console.error('Error checking saved status for breach', breach.id, error)
         }
       }
-      console.log('📊 Final saved status:', savedStatus)
+      console.log('Final saved status:', savedStatus)
       setSavedBreaches(savedStatus)
     }
 
@@ -93,11 +93,11 @@ export function BreachTable({ filters, onSavedCountChange }: BreachTableProps) {
     try {
       // Check if already saved to prevent duplicates
       if (savedBreaches[breachId]) {
-        console.warn('⚠️ Breach already saved:', breachId)
+        console.warn('Breach already saved:', breachId)
         return
       }
 
-      console.log('💾 Handling save breach:', breachId, saveData)
+      console.log('Handling save breach:', breachId, saveData)
       const result = await saveBreach(breachId, saveData)
       if (result.data && result.data[0]) {
         // Immediately update local state to show saved status
@@ -110,27 +110,27 @@ export function BreachTable({ filters, onSavedCountChange }: BreachTableProps) {
             review_status: saveData.review_status
           }
         }))
-        console.log('✅ Successfully saved and updated local state')
+        console.log('Successfully saved and updated local state')
       } else if (result.error) {
-        console.error('❌ Supabase error:', result.error)
+        console.error('Supabase error:', result.error)
         throw new Error(result.error.message || 'Failed to save breach')
       }
     } catch (error) {
-      console.error('❌ Failed to save breach:', error)
+      console.error('Failed to save breach:', error)
       throw error
     }
   }
 
   const handleRemoveSavedBreach = async (breachId: number) => {
     try {
-      console.log('🗑️ Handling remove saved breach:', breachId)
+      console.log('Handling remove saved breach:', breachId)
       const savedData = savedBreaches[breachId]
-      console.log('📊 Saved data for removal:', savedData)
+      console.log('Saved data for removal:', savedData)
 
       if (savedData?.id) {
         const result = await removeSavedBreach(savedData.id)
         if (result.error) {
-          console.error('❌ Supabase error:', result.error)
+          console.error('Supabase error:', result.error)
           throw new Error(result.error.message || 'Failed to remove saved breach')
         }
 
@@ -140,13 +140,13 @@ export function BreachTable({ filters, onSavedCountChange }: BreachTableProps) {
           delete newState[breachId]
           return newState
         })
-        console.log('✅ Successfully removed and updated local state')
+        console.log('Successfully removed and updated local state')
       } else {
-        console.warn('⚠️ No saved data found for breach:', breachId)
+        console.warn('No saved data found for breach:', breachId)
         throw new Error('No saved data found for this breach')
       }
     } catch (error) {
-      console.error('❌ Failed to remove saved breach:', error)
+      console.error('Failed to remove saved breach:', error)
       throw error
     }
   }
@@ -260,7 +260,7 @@ export function BreachTable({ filters, onSavedCountChange }: BreachTableProps) {
                   size="sm"
                   onClick={() => window.open(row.original.notice_document_url!, '_blank')}
                 >
-                  📄
+
                 </Button>
               )}
               {row.original.item_url && (
@@ -269,7 +269,7 @@ export function BreachTable({ filters, onSavedCountChange }: BreachTableProps) {
                   size="sm"
                   onClick={() => window.open(row.original.item_url!, '_blank')}
                 >
-                  🔗
+
                 </Button>
               )}
             </div>
@@ -350,7 +350,7 @@ export function BreachTable({ filters, onSavedCountChange }: BreachTableProps) {
       setLoading(true)
       setError(null)
 
-      console.log('🔍 Loading breach data with parameters:', {
+      console.log('Loading breach data with parameters:', {
         currentPage,
         pageSize,
         filters: debouncedFilters,
@@ -377,19 +377,19 @@ export function BreachTable({ filters, onSavedCountChange }: BreachTableProps) {
           publicationDateRange: debouncedFilters.publicationDateRange,
         }
 
-        console.log('📊 Query parameters:', queryParams)
+        console.log('Query parameters:', queryParams)
 
         const result = await getBreaches(queryParams)
-        console.log('📥 Supabase query result:', result)
+        console.log('Supabase query result:', result)
 
         const { data: breaches, error, count } = result
 
         if (error) {
-          console.error('❌ Supabase error:', error)
+          console.error('Supabase error:', error)
           throw error
         }
 
-        console.log('✅ Successfully loaded breaches:', {
+        console.log('Successfully loaded breaches:', {
           breachCount: breaches?.length || 0,
           totalCount: count,
           firstBreach: breaches?.[0]?.organization_name || 'None'
@@ -398,7 +398,7 @@ export function BreachTable({ filters, onSavedCountChange }: BreachTableProps) {
         setData(breaches || [])
         setTotalCount(count || 0)
       } catch (err) {
-        console.error('💥 Error loading breach data:', err)
+        console.error('Error loading breach data:', err)
         setError(err instanceof Error ? err.message : 'Failed to load data')
       } finally {
         setLoading(false)
@@ -472,8 +472,8 @@ export function BreachTable({ filters, onSavedCountChange }: BreachTableProps) {
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
                         {{
-                          asc: ' 🔼',
-                          desc: ' 🔽',
+                          asc:'',
+                          desc:'',
                         }[header.column.getIsSorted() as string] ?? null}
                       </div>
                     )}

@@ -246,7 +246,7 @@ export function AIReportButton({ breach, className }: AIReportButtonProps) {
     }
 
     if (loading || reportStatus?.status === 'processing') {
-      return 'AI is conducting 4-phase legal intelligence research: breach analysis → individual damages → affected demographics → legal marketing strategy...'
+      return'AI is conducting 4-phase legal intelligence research: breach analysis individual damages affected demographics legal marketing strategy...'
     }
 
     return 'Generate comprehensive legal intelligence report: breach details, individual damages assessment, affected demographics analysis, and class action marketing strategy with 15-25 sources per report'

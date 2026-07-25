@@ -1,18 +1,18 @@
 # California AG Enhanced Scraper Documentation
 
-## 📋 Overview
+## Overview
 
 The California Attorney General's Office enhanced scraper implements a **3-tier data collection approach** using the CSV export endpoint for reliable and comprehensive breach data collection. This implementation represents a significant upgrade from the previous HTML-based scraper.
 
-## 🎯 Implementation Status
+## Implementation Status
 
-- **Status**: 🟢 EXCELLENT
+- **Status**: EXCELLENT
 - **Implementation Date**: May 27, 2025
 - **Data Source**: California AG Data Breach Notification Portal
 - **Primary URL**: https://oag.ca.gov/privacy/databreach/list
 - **CSV Endpoint**: https://oag.ca.gov/privacy/databreach/list-export
 
-## 🏗️ Architecture
+## Architecture
 
 ### 3-Tier Data Collection Approach
 
@@ -38,7 +38,7 @@ The California Attorney General's Office enhanced scraper implements a **3-tier 
 - **Data Classification**: Identifies compromised data types (SSN, driver license, etc.)
 - **Contact Information**: Captures breach response contacts
 
-## 📊 Data Structure
+## Data Structure
 
 ### CSV Source Fields
 ```csv
@@ -96,7 +96,7 @@ The California Attorney General's Office enhanced scraper implements a **3-tier 
 }
 ```
 
-## 🔧 Technical Implementation
+## Technical Implementation
 
 ### Key Functions
 
@@ -135,12 +135,12 @@ The California Attorney General's Office enhanced scraper implements a **3-tier 
 - Ensures consistent UIDs across runs
 
 ### Date Filtering (Configurable)
-- **Testing Mode**: `CA_AG_FILTER_FROM_DATE` not set → Collect ALL historical data
-- **Production Mode**: `CA_AG_FILTER_FROM_DATE="2025-05-27"` → Filter from specified date
+- **Testing Mode**:`CA_AG_FILTER_FROM_DATE`not set Collect ALL historical data
+- **Production Mode**:`CA_AG_FILTER_FROM_DATE="2025-05-27"`Filter from specified date
 - **Purpose**: Flexible data collection for testing vs production
 - **Fallback**: Include records with unparseable dates
 
-## 📈 Performance Characteristics
+## Performance Characteristics
 
 ### Advantages
 - **Reliability**: CSV endpoint is stable and structured
@@ -154,7 +154,7 @@ The California Attorney General's Office enhanced scraper implements a **3-tier 
 - **Timeliness**: Real-time updates from AG office
 - **Standardization**: Consistent field mapping
 
-## 🔍 Sample Data
+## Sample Data
 
 ### Recent Breach Examples
 ```
@@ -172,7 +172,7 @@ Reported Date: 04/09/2025
 - **Date Range**: 2015-2025 (historical data available)
 - **Recent Activity**: 5-10 new breaches per day
 
-## 🚀 Usage
+## Usage
 
 ### Manual Execution
 
@@ -196,7 +196,7 @@ python3 scrapers/fetch_california_ag.py
 - **Schedule**: Daily at 3 AM UTC
 - **Command**: `python scrapers/fetch_california_ag.py`
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 - `SUPABASE_URL`: Database connection URL
@@ -212,7 +212,7 @@ CALIFORNIA_AG_CSV_URL = "https://oag.ca.gov/privacy/databreach/list-export"
 SOURCE_ID_CALIFORNIA_AG = 4
 ```
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -231,7 +231,7 @@ SOURCE_ID_CALIFORNIA_AG = 4
 - **Solution**: Verify incident UID generation logic
 - **Deduplication**: Based on organization + reported date
 
-## 📊 Monitoring
+## Monitoring
 
 ### Success Metrics
 - **Records Processed**: Track daily collection volume
@@ -243,7 +243,7 @@ SOURCE_ID_CALIFORNIA_AG = 4
 - **Format**: Timestamp, level, message
 - **Key Events**: CSV fetch, record processing, database insertion
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
 ### Tier 3 Implementation
 1. **PDF Analysis**: Extract detailed breach information
@@ -256,7 +256,7 @@ SOURCE_ID_CALIFORNIA_AG = 4
 2. **Enhanced Deduplication**: Cross-reference with other sources
 3. **Real-time Monitoring**: Webhook notifications for new breaches
 
-## 📚 Related Documentation
+## Related Documentation
 
 - [Implementation Status](../SCRAPER_IMPLEMENTATION_STATUS.md)
 - [Database Schema](../database_schema.sql)

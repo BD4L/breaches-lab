@@ -15,7 +15,7 @@ The BreachSense scraper has been completely rewritten to handle the current webs
 - **Monthly Archive Strategy**:
   - Uses monthly archive URLs (e.g., `/breaches/2025/may/`) instead of main page
   - Extracts ALL breaches for the month (393+ breaches vs 12 on main page)
-  - Two-Phase Processing: Extract breach cards → Visit detail pages for comprehensive data
+  - Two-Phase Processing: Extract breach cards Visit detail pages for comprehensive data
 
 ### 2. **Website Structure Handling**
 - **Monthly Archives**: Accesses complete monthly breach listings
@@ -115,12 +115,12 @@ The BreachSense scraper has been completely rewritten to handle the current webs
 
 ## Testing Results
 
-✅ **Monthly Archive Access**: Successfully extracts 393+ breach cards from monthly archive
-✅ **Comprehensive Coverage**: Captures ALL monthly breaches vs 12 from main page
-✅ **Detail Scraping**: Correctly parses structured data from detail pages
-✅ **Database Integration**: Properly inserts data into all Supabase fields
-✅ **Data Quality**: Accurate threat actor, leak size, and date information
-✅ **Error Handling**: Robust error handling and logging
+ **Monthly Archive Access**: Successfully extracts 393+ breach cards from monthly archive
+ **Comprehensive Coverage**: Captures ALL monthly breaches vs 12 from main page
+ **Detail Scraping**: Correctly parses structured data from detail pages
+ **Database Integration**: Properly inserts data into all Supabase fields
+ **Data Quality**: Accurate threat actor, leak size, and date information
+ **Error Handling**: Robust error handling and logging
 
 ## GitHub Actions Integration
 

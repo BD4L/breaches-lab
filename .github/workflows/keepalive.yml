@@ -1,0 +1,64 @@
+name: Keepalive
+
+# GitHub disables scheduled workflows after 60 days without repository activity, and does not
+# re-enable them on its own. This job does two things on a schedule well inside that window:
+#
+#   1. Pushes an empty commit, which resets the inactivity clock. This is the part that actually
+#      prevents workflows from being disabled in the first place.
+#   2. Re-enables anything already sitting in the disabled_inactivity state, so a repository that
+#      has already lapsed recovers without manual clicking.
+#
+# Step 2 alone is not enough: if every scheduled workflow is disabled, including this one, nothing
+# is left running to perform the re-enable. The commit in step 1 is what keeps that from happening.
+#
+# Pushes made with GITHUB_TOKEN do not trigger further workflow runs, so this cannot loop. The
+# empty commit touches no paths and therefore does not trigger the frontend deploy either.
+
+on:
+  schedule:
+    - cron: '0 3 1 * *'  # 03:00 UTC on the 1st of each month
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: keepalive
+  cancel-in-progress: false
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Re-enable workflows disabled for inactivity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          disabled=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows" --paginate \
+            --jq '.workflows[] | select(.state == "disabled_inactivity") | "\(.id)\t\(.name)"')
+
+          if [ -z "$disabled" ]; then
+            echo "No workflows are disabled for inactivity."
+            exit 0
+          fi
+
+          echo "$disabled" | while IFS=$'\t' read -r id name; do
+            echo "Re-enabling: $name (id $id)"
+            gh api --method PUT "repos/$GITHUB_REPOSITORY/actions/workflows/$id/enable"
+          done
+
+      - name: Push empty commit to reset the inactivity clock
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "Keepalive: reset scheduled workflow inactivity timer"
+          git push

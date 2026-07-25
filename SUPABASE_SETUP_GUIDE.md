@@ -1,10 +1,10 @@
 # Supabase Database Setup Guide
 
-## 🚨 URGENT: Database Tables Deleted - Quick Recovery
+## URGENT: Database Tables Deleted - Quick Recovery
 
 Your Supabase database tables were deleted, which is why the scrapers aren't populating data. Follow these steps to restore the complete database schema.
 
-## 📋 Step-by-Step Recovery
+## Step-by-Step Recovery
 
 ### 1. Access Supabase SQL Editor
 1. Go to your Supabase project dashboard
@@ -17,10 +17,10 @@ Your Supabase database tables were deleted, which is why the scrapers aren't pop
 3. Click **"Run"** to execute the script
 
 **What this creates:**
-- ✅ `data_sources` table with all 37 breach portal sources
-- ✅ `scraped_items` table with standardized cross-portal fields
-- ✅ Performance indexes for fast querying
-- ✅ All source mappings (SEC, State AGs, HIBP, etc.)
+-`data_sources`table with all 37 breach portal sources
+-`scraped_items`table with standardized cross-portal fields
+- Performance indexes for fast querying
+- All source mappings (SEC, State AGs, HIBP, etc.)
 
 ### 3. Verify Tables Created
 After running the script, verify the tables exist:
@@ -66,7 +66,7 @@ SELECT * FROM scraped_items WHERE title = 'Test Entry';
 DELETE FROM scraped_items WHERE title = 'Test Entry';
 ```
 
-## 📊 Database Schema Overview
+## Database Schema Overview
 
 ### Core Tables
 
@@ -107,7 +107,7 @@ DELETE FROM scraped_items WHERE title = 'Test Entry';
 | 36 | HIBP API | API |
 | 37 | Texas AG (Apify) | State AG |
 
-## 🚀 After Database Restoration
+## After Database Restoration
 
 ### 1. Trigger GitHub Actions
 Once the database is restored:
@@ -118,10 +118,10 @@ Once the database is restored:
 
 ### 2. Expected Results
 After the workflow runs, you should see:
-- ✅ Data in `scraped_items` table
-- ✅ Breach records from multiple sources
-- ✅ Standardized fields populated
-- ✅ Cross-portal analysis possible
+- Data in`scraped_items`table
+- Breach records from multiple sources
+- Standardized fields populated
+- Cross-portal analysis possible
 
 ### 3. Verify Data Collection
 Check that data is being collected:
@@ -150,7 +150,7 @@ ORDER BY si.scraped_at DESC
 LIMIT 20;
 ```
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### If Scrapers Still Fail
 1. **Check Environment Variables**: Ensure `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` are set
@@ -170,16 +170,16 @@ INSERT INTO data_sources (id, name, url, type, description) VALUES
 (38, 'New Source Name', 'https://example.com', 'Source Type', 'Description');
 ```
 
-## ✅ Success Indicators
+## Success Indicators
 
 You'll know the restoration worked when:
-- ✅ GitHub Actions run without foreign key errors
-- ✅ New records appear in `scraped_items` table
-- ✅ Dashboard shows recent breach data
-- ✅ Cross-portal queries return results
+- GitHub Actions run without foreign key errors
+- New records appear in`scraped_items`table
+- Dashboard shows recent breach data
+- Cross-portal queries return results
 
 ---
 
-**🎯 The database schema includes all enhancements for standardized cross-portal analysis while maintaining backward compatibility with existing scrapers.**
+** The database schema includes all enhancements for standardized cross-portal analysis while maintaining backward compatibility with existing scrapers.**
 
 **After running the schema script, your breach monitoring system will be fully operational again!**

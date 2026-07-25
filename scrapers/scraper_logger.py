@@ -100,7 +100,7 @@ class ScraperLogger:
             
             if response.data:
                 self.run_id = response.data[0]['id']
-                logger.info(f"📊 Started scraper run tracking: {self.scraper_name} (ID: {self.run_id})")
+                logger.info(f"Started scraper run tracking: {self.scraper_name} (ID: {self.run_id})")
                 return self.run_id
             else:
                 logger.error("Failed to create scraper run record")
@@ -146,7 +146,7 @@ class ScraperLogger:
             response = self.supabase.table('scraper_progress').insert(progress_data).execute()
             
             if response.data:
-                logger.info(f"📈 Progress: {message} (Processed: {items_processed}, Inserted: {items_inserted})")
+                logger.info(f"Progress: {message} (Processed: {items_processed}, Inserted: {items_inserted})")
                 return True
             else:
                 logger.warning("Failed to log progress")
@@ -184,7 +184,7 @@ class ScraperLogger:
             response = self.supabase.table('scraper_errors').insert(error_data).execute()
             
             if response.data:
-                logger.error(f"🚨 Error logged: {error_type} - {error_message}")
+                logger.error(f"Error logged: {error_type} - {error_message}")
                 return True
             else:
                 logger.warning("Failed to log error")
@@ -234,10 +234,10 @@ class ScraperLogger:
             response = self.supabase.table('scraper_runs').update(update_data).eq('id', self.run_id).execute()
             
             if response.data:
-                status_emoji = "✅" if success else "❌"
+                status_emoji =""if success else""
                 logger.info(f"{status_emoji} Scraper run completed: {self.scraper_name}")
-                logger.info(f"📊 Final stats: {items_processed} processed, {items_inserted} inserted, {items_skipped} skipped")
-                logger.info(f"⏱️ Duration: {duration_seconds:.1f} seconds")
+                logger.info(f"Final stats: {items_processed} processed, {items_inserted} inserted, {items_skipped} skipped")
+                logger.info(f"Duration: {duration_seconds:.1f} seconds")
                 return True
             else:
                 logger.error("Failed to update scraper run record")
@@ -303,7 +303,7 @@ def log_scraper_activity(scraper_name: str, action: str, details: Dict[str, Any]
         }
         
         supabase.table('scraper_activities').insert(activity_data).execute()
-        logger.info(f"📝 Logged activity: {scraper_name} - {action}")
+        logger.info(f"Logged activity: {scraper_name} - {action}")
         
     except Exception as e:
         logger.error(f"Failed to log scraper activity: {e}")

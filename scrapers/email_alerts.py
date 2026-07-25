@@ -88,9 +88,9 @@ class BreachEmailAlerts:
         
         # Subject line
         if affected and affected > 0:
-            subject = f"🚨 Breach Alert: {org_name} - {self.format_affected_count(affected)} people affected"
+            subject = f"Breach Alert: {org_name} - {self.format_affected_count(affected)} people affected"
         else:
-            subject = f"🚨 Breach Alert: {org_name} - New incident reported"
+            subject = f"Breach Alert: {org_name} - New incident reported"
         
         # HTML email content
         html_content = self.create_html_email(breach, user_prefs)
@@ -153,7 +153,7 @@ class BreachEmailAlerts:
             
             <!-- Header -->
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
-                <h1 style="margin: 0; font-size: 24px;">🚨 Breach Alert</h1>
+                <h1 style="margin: 0; font-size: 24px;"> Breach Alert</h1>
                 <p style="margin: 10px 0 0 0; opacity: 0.9;">New security incident detected</p>
             </div>
             
@@ -226,7 +226,7 @@ class BreachEmailAlerts:
         what_leaked = breach.get('what_was_leaked', 'Details not available')
         
         text = f"""
-🚨 BREACH ALERT
+ BREACH ALERT
 
 Organization: {org_name}
 People Affected: {self.format_affected_count(affected) if affected else 'Unknown'}
@@ -388,8 +388,8 @@ def main():
     try:
         alerts = BreachEmailAlerts()
     except ValueError as e:
-        print(f"❌ Configuration error: {e}")
-        print("💡 Make sure RESEND_API_KEY environment variable is set")
+        print(f"Configuration error: {e}")
+        print("Make sure RESEND_API_KEY environment variable is set")
         return
 
     if args.test_email:
@@ -415,27 +415,27 @@ def main():
         )
 
         if result['success']:
-            print(f"✅ Test email sent successfully to {args.test_email}")
-            print(f"📧 Message ID: {result.get('message_id')}")
+            print(f"Test email sent successfully to {args.test_email}")
+            print(f"Message ID: {result.get('message_id')}")
         else:
-            print(f"❌ Failed to send test email: {result['error']}")
+            print(f"Failed to send test email: {result['error']}")
     else:
         # Process real alerts
         if args.source and args.new_count:
-            print(f"📧 Processing alerts for {args.new_count} new breaches from {args.source}")
+            print(f"Processing alerts for {args.new_count} new breaches from {args.source}")
 
         stats = alerts.process_breach_alerts(args.since_minutes)
-        print(f"📊 Alert Summary:")
+        print(f"Alert Summary:")
         print(f"   New breaches: {stats['new_breaches']}")
         print(f"   Alerts sent: {stats['alerts_sent']}")
         print(f"   Errors: {stats['errors']}")
 
         if stats['new_breaches'] == 0:
-            print("ℹ️  No new breaches found - no alerts to send")
+            print("ℹ No new breaches found - no alerts to send")
         elif stats['alerts_sent'] == 0:
-            print("ℹ️  No users matched alert criteria - no alerts sent")
+            print("ℹ No users matched alert criteria - no alerts sent")
         else:
-            print(f"🎉 Successfully sent {stats['alerts_sent']} email alerts!")
+            print(f"Successfully sent {stats['alerts_sent']} email alerts!")
 
 
 if __name__ == "__main__":

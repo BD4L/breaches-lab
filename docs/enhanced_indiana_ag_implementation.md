@@ -3,7 +3,7 @@
 ## Overview
 The Indiana Attorney General's Office maintains yearly PDF reports containing tabular data of all data breach notifications reported to the state. This enhanced scraper processes these yearly reports to extract individual breach records with comprehensive field mapping.
 
-**Status**: 🟢 EXCELLENT
+**Status**: EXCELLENT
 **Last Updated**: 2025-01-28
 **Implementation**: 3-tier data structure with PDF table parsing
 
@@ -126,21 +126,21 @@ The Indiana AG portal provides:
 ## Database Field Mapping
 
 ### Core Fields
-- `title` → Organization Name
-- `publication_date` → Reported Date (or Breach Date if no reported date)
-- `summary_text` → Generated summary with key details
+-`title`Organization Name
+-`publication_date`Reported Date (or Breach Date if no reported date)
+-`summary_text`Generated summary with key details
 
 ### Standardized Breach Fields
-- `affected_individuals` → **Indiana residents affected only** (not total affected across all states)
-- `breach_date` → Date of breach occurrence
-- `reported_date` → Date reported to Indiana AG
-- `notice_document_url` → URL of yearly PDF report
+-`affected_individuals`**Indiana residents affected only** (not total affected across all states)
+-`breach_date`Date of breach occurrence
+-`reported_date`Date reported to Indiana AG
+-`notice_document_url`URL of yearly PDF report
 
 ### Enhanced Fields
-- `data_types_compromised` → Normalized array of data types
-- `what_was_leaked` → Raw information compromised text
-- `keywords_detected` → Data types + standard keywords
-- `tags_keywords` → Enhanced tags including breach type indicators
+-`data_types_compromised`Normalized array of data types
+-`what_was_leaked`Raw information compromised text
+-`keywords_detected`Data types + standard keywords
+-`tags_keywords`Enhanced tags including breach type indicators
 
 ## Unique Identifier Generation
 

@@ -139,14 +139,14 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🚀 AI Report function called')
+    console.log('AI Report function called')
     
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('❌ Missing Supabase configuration')
+      console.error('Missing Supabase configuration')
       return new Response(JSON.stringify({
         error: 'Missing Supabase configuration',
         details: 'SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set'
@@ -157,7 +157,7 @@ serve(async (req) => {
     }
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
-    console.log('✅ Supabase client initialized')
+    console.log('Supabase client initialized')
     
     // Parse request
     let breachId, userId
@@ -165,9 +165,9 @@ serve(async (req) => {
       const body = await req.json()
       breachId = body.breachId
       userId = body.userId
-      console.log(`📋 Request parsed - breachId: ${breachId}, userId: ${userId}`)
+      console.log(`Request parsed - breachId: ${breachId}, userId: ${userId}`)
     } catch (error) {
-      console.error('❌ Invalid JSON in request body:', error)
+      console.error('Invalid JSON in request body:', error)
       return new Response(JSON.stringify({
         error: 'Invalid JSON in request body',
         details: error.message
@@ -178,7 +178,7 @@ serve(async (req) => {
     }
     
     if (!breachId) {
-      console.error('❌ breachId is required')
+      console.error('breachId is required')
       return new Response(JSON.stringify({
         error: 'breachId is required',
         details: 'Please provide a valid breachId in the request body'
@@ -188,7 +188,7 @@ serve(async (req) => {
       })
     }
     
-    console.log(`🤖 Starting AI report generation for breach ${breachId}`)
+    console.log(`Starting AI report generation for breach ${breachId}`)
     
     // Check API key availability
     const apiKeys = {
@@ -196,10 +196,10 @@ serve(async (req) => {
       gemini: !!Deno.env.get('GEMINI_API_KEY')
     }
 
-    console.log('🔑 API Keys availability:', apiKeys)
+    console.log('API Keys availability:', apiKeys)
 
     if (!apiKeys.openrouter && !apiKeys.gemini) {
-      console.error('❌ No AI API keys configured')
+      console.error('No AI API keys configured')
       return new Response(JSON.stringify({
         error: 'No AI API keys configured',
         details: 'Please set OPENROUTER_API_KEY or GEMINI_API_KEY in Supabase Edge Function environment variables.',
@@ -218,7 +218,7 @@ serve(async (req) => {
       .single()
       
     if (breachError || !breach) {
-      console.error('❌ Breach not found:', breachError)
+      console.error('Breach not found:', breachError)
       return new Response(JSON.stringify({
         error: 'Breach not found',
         details: breachError?.message || 'No breach found with the provided ID'
@@ -228,7 +228,7 @@ serve(async (req) => {
       })
     }
 
-    console.log(`📊 Found breach: ${breach.organization_name}`)
+    console.log(`Found breach: ${breach.organization_name}`)
 
     // Check if report already exists
     const { data: existingReport } = await supabase
@@ -239,7 +239,7 @@ serve(async (req) => {
       .maybeSingle()
       
     if (existingReport && existingReport.status === 'completed') {
-      console.log(`📋 Returning existing report for breach ${breachId}`)
+      console.log(`Returning existing report for breach ${breachId}`)
       return new Response(JSON.stringify({
         reportId: existingReport.id,
         status: 'completed',
@@ -252,7 +252,7 @@ serve(async (req) => {
     }
     
     if (existingReport && existingReport.status === 'processing') {
-      console.log(`⏳ Report already processing for breach ${breachId}`)
+      console.log(`Report already processing for breach ${breachId}`)
       return new Response(JSON.stringify({
         reportId: existingReport.id,
         status: 'processing',
@@ -282,7 +282,7 @@ serve(async (req) => {
       .single()
       
     if (reportError) {
-      console.error('❌ Failed to create report record:', reportError)
+      console.error('Failed to create report record:', reportError)
       return new Response(JSON.stringify({
         error: 'Failed to create report record',
         details: reportError.message
@@ -292,11 +292,11 @@ serve(async (req) => {
       })
     }
 
-    console.log(`📊 Created report record ${reportRecord.id}`)
+    console.log(`Created report record ${reportRecord.id}`)
 
     // Generate AI report immediately
     try {
-      console.log('🤖 Starting AI report generation...')
+      console.log('Starting AI report generation...')
       const startTime = Date.now()
 
       let reportContent = ''
@@ -304,7 +304,7 @@ serve(async (req) => {
       let modelUsed = 'unknown'
 
       if (OPENROUTER_KEY) {
-        console.log('🤖 Using Kimi-K2 with web search for report generation')
+        console.log('Using Kimi-K2 with web search for report generation')
         modelUsed = 'moonshotai/kimi-k2:online'
 
         const kimiResult = await runWithKimi([
@@ -330,12 +330,12 @@ serve(async (req) => {
           index === self.findIndex(s => s.url === source.url)
         )
 
-        console.log(`🔍 Web search results: ${webSources.length} sources from annotations`)
-        console.log(`📝 Markdown links: ${markdownSources.length} sources from content`)
-        console.log(`📚 Total unique sources: ${sources.length}`)
+        console.log(`Web search results: ${webSources.length} sources from annotations`)
+        console.log(`Markdown links: ${markdownSources.length} sources from content`)
+        console.log(`Total unique sources: ${sources.length}`)
 
       } else if (apiKeys.gemini) {
-        console.log('🤖 Using Gemini as fallback')
+        console.log('Using Gemini as fallback')
         modelUsed = 'gemini-2.5-flash'
 
         // Simple Gemini fallback
@@ -354,7 +354,7 @@ serve(async (req) => {
       const endTime = Date.now()
       const processingTime = endTime - startTime
 
-      console.log(`✅ Report generated in ${processingTime}ms with ${sources.length} sources`)
+      console.log(`Report generated in ${processingTime}ms with ${sources.length} sources`)
 
       // Update database with completed report
       await supabase.from('research_jobs').update({
@@ -393,7 +393,7 @@ serve(async (req) => {
       })
 
     } catch (aiError) {
-      console.error('❌ AI generation failed:', aiError)
+      console.error('AI generation failed:', aiError)
 
       // Update database with failed status
       await supabase.from('research_jobs').update({
@@ -413,7 +413,7 @@ serve(async (req) => {
     }
 
   } catch (error) {
-    console.error('❌ Error in AI report function:', error)
+    console.error('Error in AI report function:', error)
     
     return new Response(JSON.stringify({
       error: error.message || 'Unknown error occurred',

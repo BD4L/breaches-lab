@@ -1,6 +1,6 @@
 # California AG Scraper - New Architecture
 
-## 🎯 Problem Solved
+## Problem Solved
 
 The original California AG scraper was timing out in GitHub Actions due to:
 - Processing 4,564+ historical records with heavy PDF analysis
@@ -8,7 +8,7 @@ The original California AG scraper was timing out in GitHub Actions due to:
 - Network timeouts and connection issues
 - Unreliable PDF processing blocking the entire pipeline
 
-## ✅ Solution: Separated Concerns Architecture
+## Solution: Separated Concerns Architecture
 
 ### **Primary Scraper** (Fast & Reliable)
 - **Purpose**: Daily breach data collection
@@ -22,40 +22,40 @@ The original California AG scraper was timing out in GitHub Actions due to:
 - **Reliability**: Isolated failures don't block main collection
 - **Data**: Comprehensive breach details, data types, financial impact
 
-## 🔧 Processing Modes
+## Processing Modes
 
 ### **BASIC Mode** - Ultra Fast
 ```bash
 CA_AG_PROCESSING_MODE=BASIC
 ```
-- ✅ CSV data only
-- ✅ ~30 seconds runtime
-- ✅ Zero timeout risk
-- ❌ No detail pages or PDFs
+- CSV data only
+- ~30 seconds runtime
+- Zero timeout risk
+- No detail pages or PDFs
 - **Use case**: Emergency data collection, testing
 
 ### **ENHANCED Mode** - Recommended for GitHub Actions
 ```bash
 CA_AG_PROCESSING_MODE=ENHANCED  # Default
 ```
-- ✅ CSV data + detail page scraping
-- ✅ PDF URLs collected and stored
-- ✅ ~2-5 minutes runtime
-- ✅ Low timeout risk
-- ❌ PDFs not analyzed (deferred)
+- CSV data + detail page scraping
+- PDF URLs collected and stored
+- ~2-5 minutes runtime
+- Low timeout risk
+- PDFs not analyzed (deferred)
 - **Use case**: Daily automated collection
 
 ### **FULL Mode** - Complete Analysis
 ```bash
 CA_AG_PROCESSING_MODE=FULL
 ```
-- ✅ Everything: CSV + detail pages + PDF analysis
-- ✅ Complete breach intelligence
-- ❌ 30+ minutes runtime
-- ❌ High timeout risk
+- Everything: CSV + detail pages + PDF analysis
+- Complete breach intelligence
+- 30+ minutes runtime
+- High timeout risk
 - **Use case**: Local research, comprehensive analysis
 
-## 🚀 Usage Examples
+## Usage Examples
 
 ### GitHub Actions (Automated Daily)
 ```yaml
@@ -93,7 +93,7 @@ python3 scrapers/enrich_california_pdfs.py --org-name "ALN Medical"
 python3 scrapers/enrich_california_pdfs.py --dry-run
 ```
 
-## 📊 Performance Comparison
+## Performance Comparison
 
 | Mode | Records | Runtime | Timeout Risk | PDF Analysis | Use Case |
 |------|---------|---------|--------------|--------------|----------|
@@ -102,7 +102,7 @@ python3 scrapers/enrich_california_pdfs.py --dry-run
 | **FULL** | 10 recent | 10-30 min | Medium | Complete | Local research |
 | **FULL** | All historical | 6+ hours | High | Complete | One-time analysis |
 
-## 🔄 Workflow
+## Workflow
 
 ### Daily Automated Collection (GitHub Actions)
 1. **ENHANCED mode** collects recent breaches with PDF URLs
@@ -115,7 +115,7 @@ python3 scrapers/enrich_california_pdfs.py --dry-run
 3. Updates records with detailed analysis
 4. No impact on daily collection if it fails
 
-## 📁 Data Structure
+## Data Structure
 
 ### Enhanced Mode Output
 ```json
@@ -157,29 +157,29 @@ python3 scrapers/enrich_california_pdfs.py --dry-run
 }
 ```
 
-## 🎯 Benefits
+## Benefits
 
-### ✅ Reliability
+### Reliability
 - Main scraper never times out
 - PDF failures don't block daily collection
 - Consistent data availability
 
-### ✅ Flexibility
+### Flexibility
 - Choose processing depth based on needs
 - Run PDF analysis when convenient
 - Scale analysis independently
 
-### ✅ Efficiency
+### Efficiency
 - Fast daily collection (2 minutes vs 6+ hours)
 - Resource-intensive analysis runs separately
 - Better GitHub Actions utilization
 
-### ✅ Maintainability
+### Maintainability
 - Clear separation of concerns
 - Easier debugging and testing
 - Independent service scaling
 
-## 🔧 Configuration Reference
+## Configuration Reference
 
 ### Environment Variables
 ```bash

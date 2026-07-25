@@ -1,6 +1,6 @@
 # Enhanced Delaware AG Scraper Implementation Guide
 
-## 🎯 Overview
+## Overview
 
 This document outlines the enhanced Delaware AG scraper implementation that follows your proposed three-tier data structure:
 
@@ -8,7 +8,7 @@ This document outlines the enhanced Delaware AG scraper implementation that foll
 - **B. Derived/enrichment** (computed fields)  
 - **C. Deep-dive from PDF** (future implementation)
 
-## 📊 Data Structure
+## Data Structure
 
 ### Current Enhanced raw_data_json Structure
 
@@ -46,7 +46,7 @@ This document outlines the enhanced Delaware AG scraper implementation that foll
 }
 ```
 
-## 🗄️ Field Mapping to Existing Schema
+## Field Mapping to Existing Schema
 
 | Dashboard Field | Source | Existing Schema Field |
 |----------------|--------|---------------------|
@@ -57,7 +57,7 @@ This document outlines the enhanced Delaware AG scraper implementation that foll
 | **Origin (hyperlink)** | HTML table | `notice_document_url` + `exhibit_urls` |
 | **Documents** | PDF analysis | `exhibit_urls` + `raw_data_json.delaware_ag_pdf_analysis` |
 
-## 🔧 Enhanced Functions Added
+## Enhanced Functions Added
 
 ### 1. `extract_organization_name(cell) -> tuple[str, str]`
 - Extracts org name AND row notes (like "Supplemental", "Addendum")
@@ -79,29 +79,29 @@ This document outlines the enhanced Delaware AG scraper implementation that foll
 - Will extract detailed breach information
 - Uses pdfminer or Apache Tika
 
-## 🚀 Implementation Benefits
+## Implementation Benefits
 
-### ✅ **Immediate Improvements**
+### **Immediate Improvements**
 1. **Enhanced data capture** - Row notes, multiple date detection
 2. **Better organization** - Structured raw_data_json with clear sections
 3. **Unique identifiers** - incident_uid for deduplication
 4. **Supplemental tracking** - Flags for addendum/supplemental notices
 
-### ✅ **Leverages Existing Schema**
+### **Leverages Existing Schema**
 1. **No schema changes required** - Uses existing fields optimally
 2. **Backward compatible** - Existing data remains intact
 3. **Indexed fields** - Key data in dedicated columns for fast queries
 4. **Flexible storage** - Raw JSON for future enhancements
 
-### ✅ **Future-Ready**
+### **Future-Ready**
 1. **PDF analysis framework** - Ready for implementation
 2. **Extensible structure** - Easy to add new fields
 3. **Dashboard-ready** - All fields mapped for UI display
 4. **Cross-portal consistency** - Follows standardized approach
 
-## 📋 Next Steps
+## Next Steps
 
-### Phase 1: Test Enhanced Scraper ✅ (Completed)
+### Phase 1: Test Enhanced Scraper (Completed)
 - [x] Enhanced raw_data_json structure
 - [x] Improved organization name extraction
 - [x] Row notes detection
@@ -128,17 +128,17 @@ This document outlines the enhanced Delaware AG scraper implementation that foll
 - [ ] Implement unified incident UID system
 - [ ] Create cross-portal deduplication logic
 
-## 🎯 Dashboard Fields Ready for Implementation
+## Dashboard Fields Ready for Implementation
 
 Your proposed dashboard fields are now fully supported:
 
-1. **org_name** → `title` field
-2. **breach_date_raw** → `raw_data_json.delaware_ag_raw.breach_date_raw` + `breach_date`
-3. **reported_date_raw** → `raw_data_json.delaware_ag_raw.reported_date_raw` + `reported_date`
-4. **de_residents_affected** → `affected_individuals` + `raw_data_json.delaware_ag_raw.de_residents_affected_raw`
-5. **sample_notice_url** → `notice_document_url` + `exhibit_urls`
-6. **row_notes** → `raw_data_json.delaware_ag_raw.row_notes`
-7. **incident_uid** → `raw_data_json.delaware_ag_derived.incident_uid`
-8. **is_supplemental** → `raw_data_json.delaware_ag_derived.is_supplemental`
+1. **org_name**`title`field
+2. **breach_date_raw**`raw_data_json.delaware_ag_raw.breach_date_raw`+`breach_date`
+3. **reported_date_raw**`raw_data_json.delaware_ag_raw.reported_date_raw`+`reported_date`
+4. **de_residents_affected**`affected_individuals`+`raw_data_json.delaware_ag_raw.de_residents_affected_raw`
+5. **sample_notice_url**`notice_document_url`+`exhibit_urls`
+6. **row_notes**`raw_data_json.delaware_ag_raw.row_notes`
+7. **incident_uid**`raw_data_json.delaware_ag_derived.incident_uid`
+8. **is_supplemental**`raw_data_json.delaware_ag_derived.is_supplemental`
 
 The enhanced scraper now captures all the granular data you requested while maintaining compatibility with your existing schema and providing a clear path for future PDF analysis implementation.

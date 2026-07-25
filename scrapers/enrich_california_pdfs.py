@@ -122,16 +122,16 @@ def enrich_record_with_pdf_analysis(supabase_client: SupabaseClient, record: dic
                 # Log results
                 if pdf_analysis.get('pdf_analyzed', False):
                     data_types = pdf_analysis.get('data_types_compromised', [])
-                    logger.info(f"    ✅ Analysis complete. Data types: {data_types}")
+                    logger.info(f"Analysis complete. Data types: {data_types}")
                     successful_analyses += 1
                 else:
                     error = pdf_analysis.get('error', 'Unknown error')
-                    logger.warning(f"    ⚠️  Analysis failed but PDF info preserved: {error}")
+                    logger.warning(f"Analysis failed but PDF info preserved: {error}")
                     failed_analyses += 1
 
             except Exception as pdf_error:
                 # CRITICAL: Even if PDF analysis completely fails, we preserve the PDF info
-                logger.error(f"    ❌ PDF analysis exception: {pdf_error}")
+                logger.error(f"PDF analysis exception: {pdf_error}")
                 failed_analyses += 1
 
                 # Still add the PDF info but mark as failed
@@ -169,10 +169,10 @@ def enrich_record_with_pdf_analysis(supabase_client: SupabaseClient, record: dic
         response = supabase_client.client.table("scraped_items").update(update_data).eq("id", record_id).execute()
 
         if response.data:
-            logger.info(f"✅ Successfully enriched {org_name}")
+            logger.info(f"Successfully enriched {org_name}")
             return True
         else:
-            logger.error(f"❌ Failed to update {org_name}")
+            logger.error(f"Failed to update {org_name}")
             return False
 
     except Exception as e:

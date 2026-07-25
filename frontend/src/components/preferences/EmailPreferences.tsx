@@ -194,7 +194,7 @@ export function EmailPreferences({ onClose }: EmailPreferencesProps) {
           </div>
           {onClose && (
             <Button variant="ghost" size="sm" onClick={onClose}>
-              ✕
+
             </Button>
           )}
         </div>
@@ -414,7 +414,7 @@ export function EmailPreferences({ onClose }: EmailPreferencesProps) {
                     className="bg-blue-100 text-blue-800 border-blue-200 cursor-pointer hover:bg-blue-200"
                     onClick={() => removeKeyword(keyword)}
                   >
-                    {keyword} ✕
+                    {keyword}
                   </Badge>
                 ))}
               </div>

@@ -942,7 +942,7 @@ def process_edgar_filings():
 
             if is_cybersecurity:
                 cybersecurity_found += 1
-                logger.info(f"🔒 Cybersecurity filing found: {company_name}")
+                logger.info(f"Cybersecurity filing found: {company_name}")
 
                 # Create summary snippet from cybersecurity context
                 summary_snippet = f"Cybersecurity-related 8-K filing from {company_name}."
@@ -1089,25 +1089,25 @@ def process_edgar_filings():
                 try:
                     insert_response = supabase_client.insert_item(**item_data)
                     if insert_response:
-                        logger.info(f"✅ Successfully inserted cybersecurity filing for {company_name}")
+                        logger.info(f"Successfully inserted cybersecurity filing for {company_name}")
                         total_inserted += 1
                     else:
-                        logger.error(f"❌ Failed to insert filing for {company_name}")
+                        logger.error(f"Failed to insert filing for {company_name}")
                 except Exception as e:
                     if "duplicate key value violates unique constraint" in str(e):
-                        logger.info(f"📋 Filing already exists for {company_name}")
+                        logger.info(f"Filing already exists for {company_name}")
                     else:
-                        logger.error(f"❌ Error inserting filing: {e}")
+                        logger.error(f"Error inserting filing: {e}")
             else:
                 logger.debug(f"No cybersecurity content found in {company_name} filing")
 
         except Exception as e:
             logger.error(f"Error processing filing for {company_name}: {e}", exc_info=True)
 
-    logger.info(f"🎯 SEC EDGAR processing complete:")
-    logger.info(f"   📊 Total filings processed: {total_processed}")
-    logger.info(f"   🔒 Cybersecurity filings found: {cybersecurity_found}")
-    logger.info(f"   💾 Successfully inserted: {total_inserted}")
+    logger.info(f"SEC EDGAR processing complete:")
+    logger.info(f"Total filings processed: {total_processed}")
+    logger.info(f"Cybersecurity filings found: {cybersecurity_found}")
+    logger.info(f"Successfully inserted: {total_inserted}")
 
 if __name__ == "__main__":
     logger.info("SEC EDGAR 8-K Scraper Started")

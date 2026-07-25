@@ -189,7 +189,7 @@ def check_credit_monitoring(description: str) -> tuple[bool | None, int | None]:
 def process_hhs_ocr_breaches():
     """
     Fetches HHS OCR breach data from the HTML portal and processes each record
-    using the 3-tier approach: Raw extraction → Derived/enrichment → Deep analysis.
+    using the 3-tier approach: Raw extraction Derived/enrichment Deep analysis.
 
     Since CSV export is not available, we scrape the HTML table directly.
     """

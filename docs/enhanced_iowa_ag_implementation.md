@@ -3,14 +3,14 @@
 ## Overview
 The Enhanced Iowa AG scraper processes security breach notifications from the Iowa Attorney General's 2025 page specifically. It implements a comprehensive 3-tier data structure with PDF analysis capabilities.
 
-**Status**: 🟢 EXCELLENT  
+**Status**: EXCELLENT
 **Last Updated**: 2025-05-29  
 **Source URL**: https://www.iowaattorneygeneral.gov/for-consumers/security-breach-notifications/2025-security-breach-notification/
 
 ## Key Features
 
-### ✅ Enhanced Implementation
-- **3-tier data structure** (Portal → Derived → Deep Analysis)
+### Enhanced Implementation
+- **3-tier data structure** (Portal Derived Deep Analysis)
 - **2025-focused processing** for current breach monitoring
 - **Comprehensive PDF analysis** with PyPDF2 and pdfplumber fallback
 - **Multiple document support** (primary + supplemental documents)
@@ -18,14 +18,14 @@ The Enhanced Iowa AG scraper processes security breach notifications from the Io
 - **Date filtering** (configurable via environment variables)
 - **Processing modes** (BASIC, ENHANCED, FULL)
 
-### 📊 Data Extraction
+### Data Extraction
 - **Date Reported**: When breach was reported to Iowa AG
 - **Organization Name**: Clean company/entity names
 - **PDF Documents**: Primary breach notifications + supplemental letters
 - **Affected Individuals**: Extracted from PDF content
 - **What Information Involved**: Extracted from breach notification text
 
-### 🏗️ Architecture
+### Architecture
 
 #### Tier 1: Portal Data (Raw Extraction)
 ```json
@@ -134,7 +134,7 @@ IA_AG_PROCESSING_MODE: "ENHANCED" # Process 2025 page with comprehensive field m
 - Comprehensive exception handling with context
 
 ### Fallback Strategies
-- PyPDF2 → pdfplumber for PDF extraction
+- PyPDF2 pdfplumber for PDF extraction
 - PDF URL fallback for "what was leaked" field
 - Graceful handling of missing data
 
@@ -181,5 +181,5 @@ IA_AG_PROCESSING_MODE: "ENHANCED" # Process 2025 page with comprehensive field m
 
 ---
 
-**Implementation Status**: ✅ Complete and Production Ready  
+**Implementation Status**: Complete and Production Ready
 **Next Steps**: Monitor performance in GitHub Actions and adjust configurations as needed

@@ -2,7 +2,7 @@
 
 This guide walks you through setting up the email alert system for your breach dashboard using Resend and Supabase.
 
-## 🚀 Quick Setup
+## Quick Setup
 
 ### 1. Create Resend Account
 
@@ -21,7 +21,7 @@ ALERT_FROM_EMAIL=alerts@yourdomain.com
 ```
 
 **To add secrets:**
-1. Go to your GitHub repo → Settings → Secrets and variables → Actions
+1. Go to your GitHub repo Settings Secrets and variables Actions
 2. Click "New repository secret"
 3. Add each secret
 
@@ -43,7 +43,7 @@ Test email sending:
 python scrapers/email_alerts.py --test-email your@email.com
 ```
 
-## 📧 How It Works
+## How It Works
 
 ### Email Alert Flow
 
@@ -70,7 +70,7 @@ The system uses your existing `match_alert_recipients()` function to determine w
 - **Responsive design**: Works on mobile and desktop
 - **Unsubscribe links**: GDPR compliant
 
-## 🎨 Frontend Integration
+## Frontend Integration
 
 ### Add Email Preferences to Dashboard
 
@@ -104,7 +104,7 @@ Currently uses 'anonymous' user. For production:
 3. Add email verification flow
 4. Add user registration/login
 
-## 🔧 Configuration Options
+## Configuration Options
 
 ### Alert Frequency
 
@@ -124,7 +124,7 @@ Currently uses 'anonymous' user. For production:
 - **Duplicate prevention**: Alert history tracking
 - **Bounce handling**: Resend handles automatically
 
-## 📊 Monitoring & Analytics
+## Monitoring & Analytics
 
 ### Email Delivery Tracking
 
@@ -141,7 +141,7 @@ Monitor in your dashboard:
 - Most common breach types
 - User engagement metrics
 
-## 🛡️ Security & Compliance
+## Security & Compliance
 
 ### Email Verification
 
@@ -161,7 +161,7 @@ Monitor in your dashboard:
 - API rate limiting
 - Abuse prevention
 
-## 🚨 Testing
+## Testing
 
 ### Test Email Templates
 
@@ -190,7 +190,7 @@ SELECT * FROM user_prefs;
 SELECT email, email_verified FROM user_prefs;
 ```
 
-## 🔄 Advanced Features (Future)
+## Advanced Features (Future)
 
 ### Digest Emails
 
@@ -216,7 +216,7 @@ SELECT email, email_verified FROM user_prefs;
 - User engagement tracking
 - Alert effectiveness analysis
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -255,7 +255,7 @@ print(f'Found {len(prefs.data)} user preferences')
 "
 ```
 
-## 📞 Support
+## Support
 
 For issues:
 1. Check GitHub Actions logs

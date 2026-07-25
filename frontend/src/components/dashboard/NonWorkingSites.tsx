@@ -143,7 +143,7 @@ export function NonWorkingSites({ onClose }: NonWorkingSitesProps) {
             </p>
           </div>
           <Button variant="outline" onClick={onClose}>
-            ✕ Close
+             Close
           </Button>
         </div>
 
@@ -218,7 +218,7 @@ export function NonWorkingSites({ onClose }: NonWorkingSitesProps) {
         {/* Footer */}
         <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
           <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-            💡 Manual Review Guidelines
+             Manual Review Guidelines
           </h4>
           <ul className="text-blue-800 dark:text-blue-200 text-sm space-y-1">
             <li>• <strong>Visit Site:</strong> Check if the breach notification page is accessible</li>

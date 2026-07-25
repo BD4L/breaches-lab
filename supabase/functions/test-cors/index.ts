@@ -16,14 +16,14 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🚀 Test CORS function called')
+    console.log('Test CORS function called')
     
     // Parse request
     let body
     try {
       body = await req.json()
     } catch (error) {
-      console.error('❌ Invalid JSON:', error)
+      console.error('Invalid JSON:', error)
       return new Response(JSON.stringify({
         error: 'Invalid JSON in request body',
         details: error.message
@@ -33,7 +33,7 @@ serve(async (req) => {
       })
     }
 
-    console.log('📋 Request body:', body)
+    console.log('Request body:', body)
 
     // Return success response
     return new Response(JSON.stringify({
@@ -47,7 +47,7 @@ serve(async (req) => {
     })
 
   } catch (error) {
-    console.error('❌ Error in test function:', error)
+    console.error('Error in test function:', error)
     
     return new Response(JSON.stringify({
       error: error.message || 'Unknown error occurred',

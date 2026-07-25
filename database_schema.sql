@@ -331,13 +331,13 @@ $$;
 -- ============================================================================
 --
 -- This schema includes:
--- ✅ data_sources table with all 37 breach portal sources
--- ✅ scraped_items table with standardized cross-portal fields
--- ✅ Enhanced dashboard view exposing rich breach data
--- ✅ User preferences with advanced filtering options
--- ✅ AI research jobs tracking
--- ✅ Performance indexes for fast querying
--- ✅ Row Level Security for multi-user access
--- ✅ Enhanced alert matching considering data types and breach details
+-- data_sources table with all 37 breach portal sources
+-- scraped_items table with standardized cross-portal fields
+-- Enhanced dashboard view exposing rich breach data
+-- User preferences with advanced filtering options
+-- AI research jobs tracking
+-- Performance indexes for fast querying
+-- Row Level Security for multi-user access
+-- Enhanced alert matching considering data types and breach details
 --
 -- The database is now ready for breach data collection AND frontend dashboard!

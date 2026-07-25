@@ -49,7 +49,7 @@ export function SourceSummary({ onClose }: SourceSummaryProps) {
       setError(null)
 
       // Use efficient count-based approach like the main dashboard
-      console.log('📊 Loading source stats with efficient count-based approach...')
+      console.log('Loading source stats with efficient count-based approach...')
 
       // Get all data sources
       const { data: allSources, error: sourcesError } = await supabase
@@ -161,7 +161,7 @@ export function SourceSummary({ onClose }: SourceSummaryProps) {
       // Wait for all source stats to complete
       const sourceStats = await Promise.all(sourceStatsPromises)
 
-      console.log('📊 Source Summary Efficient Debug:', {
+      console.log('Source Summary Efficient Debug:', {
         totalSources: allSources.length,
         sourceStatsCalculated: sourceStats.length,
         totalItemsSum: sourceStats.reduce((sum, s) => sum + s.total_items, 0),
@@ -213,12 +213,12 @@ export function SourceSummary({ onClose }: SourceSummaryProps) {
   // Category display functions updated to match centralized config
   const getCategoryIcon = (category: string): string => {
     switch (category) {
-      case 'State AG Sites': return '🏛️'
-      case 'Government Portals': return '🏢'
-      case 'RSS News Feeds': return '📰'
-      case 'Specialized Breach Sites': return '🔍'
-      case 'Company IR Sites': return '💼'
-      default: return '📊'
+      case'State AG Sites': return''
+      case'Government Portals': return''
+      case'RSS News Feeds': return''
+      case'Specialized Breach Sites': return''
+      case'Company IR Sites': return''
+      default: return''
     }
   }
 
@@ -276,14 +276,14 @@ export function SourceSummary({ onClose }: SourceSummaryProps) {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              📊 Source Summary Dashboard
+               Source Summary Dashboard
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
               Comprehensive statistics across all breach data sources
             </p>
           </div>
           <Button variant="outline" onClick={onClose}>
-            ✕ Close
+             Close
           </Button>
         </div>
 

@@ -16,11 +16,11 @@ def test_resend_api():
     from_email = os.getenv('ALERT_FROM_EMAIL', 'alerts@yourdomain.com')
     
     if not resend_api_key:
-        print("❌ RESEND_API_KEY environment variable not found")
+        print("RESEND_API_KEY environment variable not found")
         return False
     
-    print(f"✅ RESEND_API_KEY found: {resend_api_key[:10]}...")
-    print(f"✅ FROM_EMAIL: {from_email}")
+    print(f"RESEND_API_KEY found: {resend_api_key[:10]}...")
+    print(f"FROM_EMAIL: {from_email}")
     
     # Test email payload
     url = "https://api.resend.com/emails"
@@ -32,9 +32,9 @@ def test_resend_api():
     payload = {
         "from": from_email,
         "to": ["autsy42@gmail.com"],  # Your test email
-        "subject": "🧪 Breach Dashboard Email Test",
+        "subject":"Breach Dashboard Email Test",
         "html": """
-        <h2>🧪 Email System Test</h2>
+        <h2> Email System Test</h2>
         <p>This is a test email from your Breach Dashboard email alert system.</p>
         <p><strong>Timestamp:</strong> {}</p>
         <p>If you received this email, your Resend integration is working correctly!</p>
@@ -43,24 +43,24 @@ def test_resend_api():
     }
     
     try:
-        print("📧 Sending test email...")
+        print("Sending test email...")
         response = requests.post(url, headers=headers, json=payload)
         
-        print(f"📊 Response Status: {response.status_code}")
-        print(f"📊 Response Headers: {dict(response.headers)}")
+        print(f"Response Status: {response.status_code}")
+        print(f"Response Headers: {dict(response.headers)}")
         
         if response.status_code == 200:
             result = response.json()
-            print(f"✅ Email sent successfully!")
-            print(f"📧 Message ID: {result.get('id')}")
+            print(f"Email sent successfully!")
+            print(f"Message ID: {result.get('id')}")
             return True
         else:
-            print(f"❌ Email failed to send")
-            print(f"📊 Response: {response.text}")
+            print(f"Email failed to send")
+            print(f"Response: {response.text}")
             return False
             
     except Exception as e:
-        print(f"❌ Error sending email: {e}")
+        print(f"Error sending email: {e}")
         return False
 
 def test_database_functions():
@@ -69,7 +69,7 @@ def test_database_functions():
         from utils.supabase_client import get_supabase_client
         supabase = get_supabase_client()
         
-        print("🔍 Testing database functions...")
+        print("Testing database functions...")
         
         # Test match_alert_recipients function
         response = supabase.rpc('match_alert_recipients', {
@@ -81,42 +81,42 @@ def test_database_functions():
             'p_what_leaked': 'Personal information'
         }).execute()
         
-        print(f"✅ match_alert_recipients function works")
-        print(f"📊 Found {len(response.data)} potential recipients")
+        print(f"match_alert_recipients function works")
+        print(f"Found {len(response.data)} potential recipients")
         
         for recipient in response.data:
-            print(f"   📧 {recipient.get('user_email')} (threshold: {recipient.get('threshold')})")
+            print(f"{recipient.get('user_email')} (threshold: {recipient.get('threshold')})")
         
         return True
         
     except Exception as e:
-        print(f"❌ Database function test failed: {e}")
+        print(f"Database function test failed: {e}")
         return False
 
 if __name__ == "__main__":
-    print("🧪 Testing Breach Dashboard Email System")
+    print("Testing Breach Dashboard Email System")
     print("=" * 50)
     
     # Test 1: Resend API
-    print("\n1️⃣ Testing Resend API...")
+    print("\n1⃣ Testing Resend API...")
     resend_works = test_resend_api()
     
     # Test 2: Database functions
-    print("\n2️⃣ Testing Database Functions...")
+    print("\n2⃣ Testing Database Functions...")
     db_works = test_database_functions()
     
     # Summary
-    print("\n📊 TEST SUMMARY:")
-    print(f"   Resend API: {'✅ Working' if resend_works else '❌ Failed'}")
-    print(f"   Database Functions: {'✅ Working' if db_works else '❌ Failed'}")
+    print("\n TEST SUMMARY:")
+    print(f"Resend API: {'Working'if resend_works else'Failed'}")
+    print(f"Database Functions: {'Working'if db_works else'Failed'}")
     
     if resend_works and db_works:
-        print("\n🎉 Email system is ready to work!")
-        print("💡 Next steps:")
+        print("\n Email system is ready to work!")
+        print("Next steps:")
         print("   1. Make sure your email (autsy42@gmail.com) is verified in user_prefs")
         print("   2. Wait for new breaches to be detected by scrapers")
         print("   3. Check your email for breach alerts")
     else:
-        print("\n⚠️ Email system needs fixes before it will work")
+        print("\n Email system needs fixes before it will work")
         
     sys.exit(0 if (resend_works and db_works) else 1)

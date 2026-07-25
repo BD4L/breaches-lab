@@ -920,15 +920,15 @@ def process_california_ag_breaches(scraper_logger=None):
 
                 # If we have original text but no parsed dates, log this for investigation
                 if original_breach_date_text and not enhanced_record['breach_dates']:
-                    logger.info(f"📅 Breach date text present but not parsed for {enhanced_record['organization_name']}: '{original_breach_date_text}'")
+                    logger.info(f"Breach date text present but not parsed for {enhanced_record['organization_name']}:'{original_breach_date_text}'")
                 elif original_breach_date_text and enhanced_record['breach_dates']:
-                    logger.debug(f"✅ Successfully parsed breach dates: '{original_breach_date_text}' -> {enhanced_record['breach_dates']}")
+                    logger.debug(f"Successfully parsed breach dates:'{original_breach_date_text}'-> {enhanced_record['breach_dates']}")
 
                 # Determine what_was_leaked value with PDF URL fallback
                 what_was_leaked_value = what_information_involved_text
                 if not what_was_leaked_value and notice_document_url:
                     what_was_leaked_value = f"See breach details in PDF: {notice_document_url}"
-                    logger.info(f"📄 Using PDF URL fallback for what_was_leaked: {enhanced_record['organization_name']}")
+                    logger.info(f"Using PDF URL fallback for what_was_leaked: {enhanced_record['organization_name']}")
 
                 db_item = {
                     'source_id': SOURCE_ID_CALIFORNIA_AG,
@@ -972,7 +972,7 @@ def process_california_ag_breaches(scraper_logger=None):
 
                 # Log enhancement errors if any occurred (but still proceed with database insertion)
                 if enhanced_record.get('enhancement_errors'):
-                    logger.warning(f"⚠️  Enhancement errors for {enhanced_record['organization_name']}: {enhanced_record['enhancement_errors']}")
+                    logger.warning(f"Enhancement errors for {enhanced_record['organization_name']}: {enhanced_record['enhancement_errors']}")
                     # Still proceed - we have the core breach data which is most important
 
                 # Smart duplicate handling: Check if item exists and if it needs enhancement updates
@@ -1023,7 +1023,7 @@ def process_california_ag_breaches(scraper_logger=None):
                         update_reasons.append("now has 'What information was involved?' text")
 
                     if should_update:
-                        logger.info(f"🔄 Updating existing item with enhanced data: {enhanced_record['organization_name']}")
+                        logger.info(f"Updating existing item with enhanced data: {enhanced_record['organization_name']}")
                         logger.info(f"   Update reasons: {', '.join(update_reasons)}")
 
                         # Update the existing item with enhanced data
@@ -1034,11 +1034,11 @@ def process_california_ag_breaches(scraper_logger=None):
 
                         if update_success:
                             processed_count += 1
-                            logger.info(f"✅ Successfully updated existing item: {enhanced_record['organization_name']}")
+                            logger.info(f"Successfully updated existing item: {enhanced_record['organization_name']}")
                         else:
-                            logger.error(f"❌ Failed to update existing item: {enhanced_record['organization_name']}")
+                            logger.error(f"Failed to update existing item: {enhanced_record['organization_name']}")
                     else:
-                        logger.info(f"⏭️  Skipping existing item (no enhancement improvements): {enhanced_record['organization_name']}")
+                        logger.info(f"Skipping existing item (no enhancement improvements): {enhanced_record['organization_name']}")
 
                     continue
 
@@ -1048,18 +1048,18 @@ def process_california_ag_breaches(scraper_logger=None):
                     if insert_result:
                         processed_count += 1
                         enhancement_status = "with enhancement errors" if enhanced_record.get('enhancement_errors') else "successfully"
-                        logger.info(f"✅ Saved breach data {enhancement_status}: {enhanced_record['organization_name']}")
+                        logger.info(f"Saved breach data {enhancement_status}: {enhanced_record['organization_name']}")
                     else:
-                        logger.error(f"❌ Database insertion failed: {enhanced_record['organization_name']}")
+                        logger.error(f"Database insertion failed: {enhanced_record['organization_name']}")
                 except Exception as db_error:
-                    logger.error(f"❌ Database insertion error for {enhanced_record['organization_name']}: {db_error}")
+                    logger.error(f"Database insertion error for {enhanced_record['organization_name']}: {db_error}")
                     # Continue processing other records even if this one fails
 
             except Exception as e:
                 # CRITICAL: Even if record processing completely fails, log it and continue
                 # We must not let one bad record stop the entire scraper
                 org_name = breach_record.get('organization_name', 'Unknown')
-                logger.error(f"❌ Complete failure processing breach record for {org_name}: {e}")
+                logger.error(f"Complete failure processing breach record for {org_name}: {e}")
                 logger.error(f"   This breach will be missed in this run but scraper continues")
                 # Continue to next record - don't let one failure stop everything
 

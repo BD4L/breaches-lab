@@ -256,10 +256,10 @@ RATE_LIMIT_DELAY = 0.1  # 100ms between requests
 
 ### Processing Statistics
 ```
-🎯 SEC EDGAR processing complete:
-   📊 Total filings processed: 1,247
-   🔒 Cybersecurity filings found: 23
-   💾 Successfully inserted: 23
+ SEC EDGAR processing complete:
+    Total filings processed: 1,247
+    Cybersecurity filings found: 23
+    Successfully inserted: 23
 ```
 
 ---

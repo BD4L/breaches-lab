@@ -705,7 +705,7 @@ def process_hawaii_ag_breaches():
                 what_was_leaked_value = what_information_involved_text
                 if not what_was_leaked_value and notice_document_url:
                     what_was_leaked_value = f"See breach details in PDF: {notice_document_url}"
-                    logger.info(f"📄 Using PDF URL fallback for what_was_leaked: {enhanced_record['organization_name']}")
+                    logger.info(f"Using PDF URL fallback for what_was_leaked: {enhanced_record['organization_name']}")
 
                 # Create tags including breach categories
                 tags = ["hawaii_ag", "hi_breach", "security_notification"]
@@ -747,7 +747,7 @@ def process_hawaii_ag_breaches():
 
                 # Log enhancement errors if any occurred (but still proceed with database insertion)
                 if enhanced_record.get('enhancement_errors'):
-                    logger.warning(f"⚠️  Enhancement errors for {enhanced_record['organization_name']}: {enhanced_record['enhancement_errors']}")
+                    logger.warning(f"Enhancement errors for {enhanced_record['organization_name']}: {enhanced_record['enhancement_errors']}")
                     # Still proceed - we have the core breach data which is most important
 
                 # Smart duplicate handling: Check if item exists and if it needs enhancement updates
@@ -777,23 +777,23 @@ def process_hawaii_ag_breaches():
                         update_reasons.append("now has affected individuals count")
 
                     if should_update:
-                        logger.info(f"🔄 Updating existing item for {enhanced_record['organization_name']}: {', '.join(update_reasons)}")
+                        logger.info(f"Updating existing item for {enhanced_record['organization_name']}: {','.join(update_reasons)}")
                         update_success = supabase_client.update_item_enhancement(enhancement_status['item_id'], db_item)
                         if update_success:
-                            logger.info(f"✅ Successfully updated enhancement data for {enhanced_record['organization_name']}")
+                            logger.info(f"Successfully updated enhancement data for {enhanced_record['organization_name']}")
                             processed_count += 1
                         else:
-                            logger.error(f"❌ Failed to update enhancement data for {enhanced_record['organization_name']}")
+                            logger.error(f"Failed to update enhancement data for {enhanced_record['organization_name']}")
                     else:
-                        logger.debug(f"⏭️  Skipping {enhanced_record['organization_name']} - already exists with adequate data")
+                        logger.debug(f"Skipping {enhanced_record['organization_name']} - already exists with adequate data")
                 else:
                     # New item - insert it
                     insert_response = supabase_client.insert_item(**db_item)
                     if insert_response:
-                        logger.info(f"✅ Successfully inserted new item for {enhanced_record['organization_name']}")
+                        logger.info(f"Successfully inserted new item for {enhanced_record['organization_name']}")
                         processed_count += 1
                     else:
-                        logger.error(f"❌ Failed to insert item for {enhanced_record['organization_name']}")
+                        logger.error(f"Failed to insert item for {enhanced_record['organization_name']}")
 
             except Exception as e:
                 logger.error(f"Error processing breach for '{breach_record.get('organization_name', 'Unknown')}': {e}", exc_info=True)

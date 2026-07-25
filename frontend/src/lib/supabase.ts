@@ -245,7 +245,7 @@ export async function getBreaches(params: {
     publicationDateRange = ''
   } = params
 
-  console.log('🔍 getBreaches called with params:', {
+  console.log('getBreaches called with params:', {
     page, limit, sourceTypes, selectedSources, minAffected, affectedKnown, noticesSent,
     search, sortBy, sortOrder, scrapedDateRange, breachDateRange, publicationDateRange
   })
@@ -295,24 +295,24 @@ export async function getBreaches(params: {
 
   // Filter for records where affected individuals count is known/unknown
   if (affectedKnown !== undefined) {
-    console.log('🔍 Applying affectedKnown filter:', affectedKnown)
+    console.log('Applying affectedKnown filter:', affectedKnown)
     if (affectedKnown) {
-      console.log('📊 Filtering for records WITH affected_individuals count')
+      console.log('Filtering for records WITH affected_individuals count')
       query = query.not('affected_individuals', 'is', null)
     } else {
-      console.log('📊 Filtering for records WITHOUT affected_individuals count')
+      console.log('Filtering for records WITHOUT affected_individuals count')
       query = query.is('affected_individuals', null)
     }
   }
 
   // Filter for records where victim notices have been sent
   if (noticesSent !== undefined) {
-    console.log('🔍 Applying noticesSent filter:', noticesSent)
+    console.log('Applying noticesSent filter:', noticesSent)
     if (noticesSent) {
-      console.log('📊 Filtering for records WITH notice documents (victims notified)')
+      console.log('Filtering for records WITH notice documents (victims notified)')
       query = query.not('notice_document_url', 'is', null)
     } else {
-      console.log('📊 Filtering for records WITHOUT notice documents (victims not notified)')
+      console.log('Filtering for records WITHOUT notice documents (victims not notified)')
       query = query.is('notice_document_url', null)
     }
   }
@@ -385,7 +385,7 @@ export async function getNewsArticles(params: {
     publicationDateRange = ''
   } = params
 
-  console.log('🔍 getNewsArticles called with params:', params)
+  console.log('getNewsArticles called with params:', params)
 
   let query = supabase
     .from('v_breach_dashboard')
@@ -395,7 +395,7 @@ export async function getNewsArticles(params: {
   const newsSourceTypes = SOURCE_TYPE_CONFIG.getNewsSourceTypes()
   query = query.in('source_type', newsSourceTypes)
 
-  console.log('🔍 Applied news source filter:', newsSourceTypes)
+  console.log('Applied news source filter:', newsSourceTypes)
 
   // Apply specific source filtering
   if (selectedSources.length > 0) {
@@ -435,8 +435,8 @@ export async function getNewsArticles(params: {
   const to = from + limit - 1
   query = query.range(from, to)
 
-  console.log('🔍 Final query range:', { from, to, page, limit })
-  console.log('🔍 About to execute news query...')
+  console.log('Final query range:', { from, to, page, limit })
+  console.log('About to execute news query...')
 
   return query
 }
@@ -511,17 +511,17 @@ function parseDateRange(range: string): { start?: string; end?: string } {
       // Handle pipe-separated date ranges (format: "YYYY-MM-DD|YYYY-MM-DD")
       if (range.includes('|')) {
         const [startDate, endDate] = range.split('|')
-        console.log('🔍 Parsing pipe-separated date range:', { startDate, endDate, originalRange: range })
+        console.log('Parsing pipe-separated date range:', { startDate, endDate, originalRange: range })
 
         try {
           const result = {
             start: startDate ? new Date(startDate + 'T00:00:00.000Z').toISOString() : undefined,
             end: endDate ? new Date(endDate + 'T23:59:59.999Z').toISOString() : undefined
           }
-          console.log('📅 Parsed date range result:', result)
+          console.log('Parsed date range result:', result)
           return result
         } catch (error) {
-          console.error('❌ Error parsing date range:', error)
+          console.error('Error parsing date range:', error)
           return {}
         }
       }
@@ -607,8 +607,8 @@ export async function getSourcesByCategory() {
     return acc
   }, {} as Record<number, { breaches: number; news: number; total: number }>)
 
-  console.log('🔍 getSourcesByCategory v3 - sourceItemCounts sample:', Object.entries(sourceItemCounts).slice(0, 5))
-  console.log('⏰ Function called at:', new Date().toISOString())
+  console.log('getSourcesByCategory v3 - sourceItemCounts sample:', Object.entries(sourceItemCounts).slice(0, 5))
+  console.log('Function called at:', new Date().toISOString())
 
   // Group sources by new categorization
   const categories: Record<string, Array<{id: number, name: string, originalType: string, itemCount: number, itemType: string}>> = {
@@ -734,7 +734,7 @@ export async function saveBreach(breachId: number, data: {
   assigned_to: string
   due_date: string
 }) {
-  console.log('💾 Saving breach:', { breachId, data })
+  console.log('Saving breach:', { breachId, data })
 
   // Clean the data to ensure it matches database expectations
   const cleanData = {
@@ -749,14 +749,14 @@ export async function saveBreach(breachId: number, data: {
     due_date: data.due_date || null
   }
 
-  console.log('🧹 Cleaned data:', cleanData)
+  console.log('Cleaned data:', cleanData)
 
   const { data: result, error } = await supabase
     .from('saved_breaches')
     .insert(cleanData)
     .select()
 
-  console.log('📊 Save result:', { result, error })
+  console.log('Save result:', { result, error })
   return { data: result, error }
 }
 
@@ -791,7 +791,7 @@ export async function getSavedBreaches(params: {
 }
 
 export async function removeSavedBreach(savedId: number) {
-  console.log('🗑️ Removing saved breach:', savedId)
+  console.log('Removing saved breach:', savedId)
 
   const { error } = await supabase
     .from('saved_breaches')
@@ -799,7 +799,7 @@ export async function removeSavedBreach(savedId: number) {
     .eq('id', savedId)
     .eq('user_id', 'anonymous') // For now, using anonymous user
 
-  console.log('📊 Remove result:', { error })
+  console.log('Remove result:', { error })
   return { error }
 }
 
@@ -826,7 +826,7 @@ export async function updateSavedBreach(savedId: number, updates: {
 }
 
 export async function checkIfBreachSaved(breachId: number) {
-  console.log('🔍 Checking if breach is saved:', breachId)
+  console.log('Checking if breach is saved:', breachId)
 
   const { data, error } = await supabase
     .from('saved_breaches')
@@ -835,7 +835,7 @@ export async function checkIfBreachSaved(breachId: number) {
     .eq('user_id', 'anonymous') // For now, using anonymous user
     .maybeSingle() // Use maybeSingle instead of single to handle no results
 
-  console.log('📊 Check result:', { data, error, breachId })
+  console.log('Check result:', { data, error, breachId })
   return { data, error }
 }
 
@@ -932,7 +932,7 @@ export async function getDailyStats(): Promise<{ data: DailyStats | null; error:
     const startIso = startTime.toISOString()
     const endIso = endTime.toISOString()
 
-    console.log('📅 Getting daily stats from:', startIso, 'to:', endIso)
+    console.log('Getting daily stats from:', startIso,'to:', endIso)
 
     // Get all daily items for general stats
     const { data, error } = await supabase
@@ -956,11 +956,11 @@ export async function getDailyStats(): Promise<{ data: DailyStats | null; error:
       .limit(3)
 
     if (topBreachesError) {
-      console.warn('⚠️ Error fetching top breaches:', topBreachesError)
+      console.warn('Error fetching top breaches:', topBreachesError)
     }
 
-    console.log('📊 Daily stats raw data:', data?.length || 0, 'items')
-    console.log('🏆 Top breaches data:', topBreachesData?.length || 0, 'breaches')
+    console.log('Daily stats raw data:', data?.length || 0,'items')
+    console.log('Top breaches data:', topBreachesData?.length || 0,'breaches')
 
     // Categorize sources as breach vs news using centralized config
     let newBreaches = 0
@@ -1031,17 +1031,17 @@ export async function getDailyStats(): Promise<{ data: DailyStats | null; error:
       }
     }
 
-    console.log('📈 Daily stats computed:', dailyStats)
+    console.log('Daily stats computed:', dailyStats)
     return { data: dailyStats, error: null }
   } catch (error) {
-    console.error('❌ Error fetching daily stats:', error)
+    console.error('Error fetching daily stats:', error)
     return { data: null, error: error as Error }
   }
 }
 
 // AI Report Functions
 export async function generateAIReport(breachId: number, userId?: string) {
-  console.log('🤖 Generating AI report for breach:', breachId)
+  console.log('Generating AI report for breach:', breachId)
 
   try {
     const { data, error } = await supabase.functions.invoke('generate-ai-report', {
@@ -1052,20 +1052,20 @@ export async function generateAIReport(breachId: number, userId?: string) {
     })
 
     if (error) {
-      console.error('❌ Error generating AI report:', error)
+      console.error('Error generating AI report:', error)
       throw error
     }
 
-    console.log('✅ AI report generation initiated:', data)
+    console.log('AI report generation initiated:', data)
     return { data, error: null }
   } catch (error) {
-    console.error('❌ Failed to generate AI report:', error)
+    console.error('Failed to generate AI report:', error)
     return { data: null, error: error as Error }
   }
 }
 
 export async function getAIReport(reportId: string) {
-  console.log('📄 Fetching AI report:', reportId)
+  console.log('Fetching AI report:', reportId)
 
   try {
     const { data, error } = await supabase
@@ -1075,20 +1075,20 @@ export async function getAIReport(reportId: string) {
       .single()
 
     if (error) {
-      console.error('❌ Error fetching AI report:', error)
+      console.error('Error fetching AI report:', error)
       throw error
     }
 
-    console.log('✅ AI report fetched successfully')
+    console.log('AI report fetched successfully')
     return { data, error: null }
   } catch (error) {
-    console.error('❌ Failed to fetch AI report:', error)
+    console.error('Failed to fetch AI report:', error)
     return { data: null, error: error as Error }
   }
 }
 
 export async function getAIReportsByBreach(breachId: number) {
-  console.log('📄 Fetching AI reports for breach:', breachId)
+  console.log('Fetching AI reports for breach:', breachId)
 
   try {
     const { data, error } = await supabase
@@ -1099,20 +1099,20 @@ export async function getAIReportsByBreach(breachId: number) {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('❌ Error fetching AI reports for breach:', error)
+      console.error('Error fetching AI reports for breach:', error)
       throw error
     }
 
-    console.log('✅ AI reports for breach fetched successfully:', data?.length || 0, 'reports')
+    console.log('AI reports for breach fetched successfully:', data?.length || 0,'reports')
     return { data, error: null }
   } catch (error) {
-    console.error('❌ Failed to fetch AI reports for breach:', error)
+    console.error('Failed to fetch AI reports for breach:', error)
     return { data: null, error: error as Error }
   }
 }
 
 export async function getUserAIReportUsage(userId: string, days: number = 7) {
-  console.log('📊 Fetching AI report usage for user:', userId)
+  console.log('Fetching AI report usage for user:', userId)
 
   try {
     const startDate = new Date()
@@ -1126,20 +1126,20 @@ export async function getUserAIReportUsage(userId: string, days: number = 7) {
       .order('date', { ascending: false })
 
     if (error) {
-      console.error('❌ Error fetching AI report usage:', error)
+      console.error('Error fetching AI report usage:', error)
       throw error
     }
 
-    console.log('✅ AI report usage fetched successfully:', data?.length || 0, 'records')
+    console.log('AI report usage fetched successfully:', data?.length || 0,'records')
     return { data, error: null }
   } catch (error) {
-    console.error('❌ Failed to fetch AI report usage:', error)
+    console.error('Failed to fetch AI report usage:', error)
     return { data: null, error: error as Error }
   }
 }
 
 export async function checkDailyRateLimit(userId: string, maxReports: number = 10) {
-  console.log('🚦 Checking daily rate limit for user:', userId)
+  console.log('Checking daily rate limit for user:', userId)
 
   try {
     const { data, error } = await supabase.rpc('check_daily_rate_limit', {
@@ -1148,14 +1148,14 @@ export async function checkDailyRateLimit(userId: string, maxReports: number = 1
     })
 
     if (error) {
-      console.error('❌ Error checking rate limit:', error)
+      console.error('Error checking rate limit:', error)
       throw error
     }
 
-    console.log('✅ Rate limit check result:', data)
+    console.log('Rate limit check result:', data)
     return { data, error: null }
   } catch (error) {
-    console.error('❌ Failed to check rate limit:', error)
+    console.error('Failed to check rate limit:', error)
     return { data: null, error: error as Error }
   }
 }

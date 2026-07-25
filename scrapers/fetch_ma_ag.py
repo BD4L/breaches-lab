@@ -412,15 +412,15 @@ def has_data_changed(current_state, previous_state):
 
     # Check breach count
     if current_state.get("breach_count_2025") != previous_state.get("breach_count_2025"):
-        changes.append(f"Breach count: {previous_state.get('breach_count_2025')} → {current_state.get('breach_count_2025')}")
+        changes.append(f"Breach count: {previous_state.get('breach_count_2025')} {current_state.get('breach_count_2025')}")
 
     # Check affected count
     if current_state.get("affected_count_2025") != previous_state.get("affected_count_2025"):
-        changes.append(f"Affected count: {previous_state.get('affected_count_2025')} → {current_state.get('affected_count_2025')}")
+        changes.append(f"Affected count: {previous_state.get('affected_count_2025')} {current_state.get('affected_count_2025')}")
 
     # Check PDF size
     if current_state.get("pdf_size_kb") != previous_state.get("pdf_size_kb"):
-        changes.append(f"PDF size: {previous_state.get('pdf_size_kb')} KB → {current_state.get('pdf_size_kb')} KB")
+        changes.append(f"PDF size: {previous_state.get('pdf_size_kb')} KB {current_state.get('pdf_size_kb')} KB")
 
     if changes:
         logger.info(f"Changes detected: {'; '.join(changes)}")
@@ -786,10 +786,10 @@ def process_massachusetts_ag_breaches():
             # Insert into database
             insert_response = supabase_client.insert_item(**item_data)
             if insert_response:
-                logger.info(f"✅ Successfully inserted breach: {breach_number} - {org_name}")
+                logger.info(f"Successfully inserted breach: {breach_number} - {org_name}")
                 total_inserted += 1
             else:
-                logger.error(f"❌ Failed to insert breach: {breach_number} - {org_name}")
+                logger.error(f"Failed to insert breach: {breach_number} - {org_name}")
                 total_skipped += 1
 
         except Exception as e:
@@ -799,44 +799,44 @@ def process_massachusetts_ag_breaches():
     # Save current state
     save_state_file(current_state)
 
-    logger.info(f"🎉 Finished Massachusetts AG processing. Total: {total_processed} processed, {total_inserted} inserted, {total_skipped} skipped, {total_filtered_old} filtered (older than {MA_AG_FILTER_DAYS_BACK} days)")
+    logger.info(f"Finished Massachusetts AG processing. Total: {total_processed} processed, {total_inserted} inserted, {total_skipped} skipped, {total_filtered_old} filtered (older than {MA_AG_FILTER_DAYS_BACK} days)")
 
 def test_massachusetts_ag_scraper():
     """
     Test function to verify the Massachusetts AG scraper works correctly.
     Tests summary page parsing and annual PDF processing without database insertion.
     """
-    logger.info("🧪 Testing Massachusetts AG scraper...")
+    logger.info("Testing Massachusetts AG scraper...")
 
     # Note: Using S3 redirect approach to bypass WAF
 
     # Test S3 redirect approach directly
-    logger.info("🔍 Testing S3 redirect approach for PDF download...")
+    logger.info("Testing S3 redirect approach for PDF download...")
 
     # Test direct download for the 2025 PDF
     direct_response = get_direct_download_response(MASSACHUSETTS_AG_2025_PDF_URL)
     if direct_response:
-        logger.info(f"✅ Successfully downloaded PDF directly:")
+        logger.info(f"Successfully downloaded PDF directly:")
         logger.info(f"  - URL: {MASSACHUSETTS_AG_2025_PDF_URL}")
         logger.info(f"  - Size: {len(direct_response.content)} bytes")
         logger.info(f"  - Content-Type: {direct_response.headers.get('content-type', 'unknown')}")
     else:
-        logger.error("❌ Failed to download PDF directly")
+        logger.error("Failed to download PDF directly")
         return False
 
     # Test state file operations
-    logger.info("\n💾 Testing state file operations...")
+    logger.info("\n Testing state file operations...")
     test_state = {"test": "data", "timestamp": datetime.now().isoformat()}
     save_state_file(test_state)
     loaded_state = load_state_file()
     if loaded_state.get("test") == "data":
-        logger.info("✅ State file operations working")
+        logger.info("State file operations working")
     else:
-        logger.error("❌ State file operations failed")
+        logger.error("State file operations failed")
         return False
 
     # Test change detection with mock data
-    logger.info("\n🔄 Testing change detection...")
+    logger.info("\n Testing change detection...")
     mock_state = {
         "breach_count_2025": 922,
         "affected_count_2025": 1151829,
@@ -852,7 +852,7 @@ def test_massachusetts_ag_scraper():
     logger.info(f"Change detection (same state): {has_changes}")
 
     # Test date filtering
-    logger.info(f"\n📅 Testing date filtering (last {MA_AG_FILTER_DAYS_BACK} days)...")
+    logger.info(f"\n Testing date filtering (last {MA_AG_FILTER_DAYS_BACK} days)...")
 
     # Test with recent date (should pass)
     recent_date = (datetime.now() - timedelta(days=2)).strftime("%d-%b-%y")
@@ -866,14 +866,14 @@ def test_massachusetts_ag_scraper():
 
     # Test annual PDF parsing (first few records only)
     if MA_AG_PROCESSING_MODE in ["ENHANCED", "FULL"]:
-        logger.info(f"\n📄 Testing annual PDF parsing...")
+        logger.info(f"\n Testing annual PDF parsing...")
         try:
             # Test with a small sample to avoid timeout
             logger.info("Attempting to parse annual PDF (this may take a moment)...")
             breach_records = parse_annual_pdf_content(MASSACHUSETTS_AG_2025_PDF_URL)
 
             if breach_records:
-                logger.info(f"✅ Successfully parsed {len(breach_records)} breach records from annual PDF")
+                logger.info(f"Successfully parsed {len(breach_records)} breach records from annual PDF")
 
                 # Show first 5 examples
                 for i, record in enumerate(breach_records[:5]):
@@ -885,15 +885,15 @@ def test_massachusetts_ag_scraper():
                 if len(breach_records) > 5:
                     logger.info(f"  ... and {len(breach_records) - 5} more")
             else:
-                logger.warning("⚠️ No breach records found in annual PDF")
+                logger.warning("No breach records found in annual PDF")
 
         except Exception as e:
-            logger.error(f"❌ Annual PDF parsing failed: {e}")
+            logger.error(f"Annual PDF parsing failed: {e}")
             return False
     else:
-        logger.info("📄 Skipping PDF parsing test (not in ENHANCED/FULL mode)")
+        logger.info("Skipping PDF parsing test (not in ENHANCED/FULL mode)")
 
-    logger.info("✅ Massachusetts AG scraper test completed successfully!")
+    logger.info("Massachusetts AG scraper test completed successfully!")
     return True
 
 if __name__ == "__main__":

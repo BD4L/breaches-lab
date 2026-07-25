@@ -90,13 +90,13 @@ def setup_scraper_logging_tables():
                 
                 if result.data is not None:
                     success_count += 1
-                    logger.info(f"✅ Statement {i} executed successfully")
+                    logger.info(f"Statement {i} executed successfully")
                 else:
-                    logger.warning(f"⚠️ Statement {i} returned no data (might be normal)")
+                    logger.warning(f"Statement {i} returned no data (might be normal)")
                     success_count += 1
                     
             except Exception as e:
-                logger.error(f"❌ Failed to execute statement {i}: {e}")
+                logger.error(f"Failed to execute statement {i}: {e}")
                 logger.error(f"   Statement: {statement[:100]}...")
                 # Continue with other statements
         
@@ -117,19 +117,19 @@ def setup_scraper_logging_tables():
             
             if result.data:
                 test_id = result.data[0]['id']
-                logger.info("✅ Test record inserted successfully")
+                logger.info("Test record inserted successfully")
                 
                 # Clean up test record
                 supabase.table('scraper_runs').delete().eq('id', test_id).execute()
-                logger.info("✅ Test record cleaned up")
+                logger.info("Test record cleaned up")
                 
                 return True
             else:
-                logger.error("❌ Failed to insert test record")
+                logger.error("Failed to insert test record")
                 return False
                 
         except Exception as e:
-            logger.error(f"❌ Test insertion failed: {e}")
+            logger.error(f"Test insertion failed: {e}")
             return False
             
     except Exception as e:
@@ -164,7 +164,7 @@ $$;
     logger.info("=" * 60)
 
 if __name__ == "__main__":
-    logger.info("🚀 Setting up Scraper Logging System...")
+    logger.info("Setting up Scraper Logging System...")
     
     # Check if we need to create the exec_sql function first
     try:
@@ -176,18 +176,18 @@ if __name__ == "__main__":
             # Try to call the function to see if it exists
             try:
                 supabase.rpc('exec_sql', {'sql': 'SELECT 1'}).execute()
-                logger.info("✅ exec_sql function is available")
+                logger.info("exec_sql function is available")
                 
                 # Proceed with setup
                 if setup_scraper_logging_tables():
-                    logger.info("🎉 Scraper logging system setup completed successfully!")
+                    logger.info("Scraper logging system setup completed successfully!")
                     logger.info("You can now use the ScraperLogger class in your scrapers.")
                 else:
-                    logger.error("❌ Setup failed")
+                    logger.error("Setup failed")
                     sys.exit(1)
                     
             except Exception:
-                logger.warning("⚠️ exec_sql function not found")
+                logger.warning("exec_sql function not found")
                 create_exec_sql_function()
                 logger.info("Please run the function above in Supabase SQL Editor, then run this script again.")
                 

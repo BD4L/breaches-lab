@@ -287,7 +287,7 @@ export function SourceSummaryHero() {
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
-                <span className="text-white text-xl">📊</span>
+                <span className="text-white text-xl"></span>
               </div>
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
             </div>
@@ -308,7 +308,7 @@ export function SourceSummaryHero() {
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-500/25">
-                <span className="text-white text-xl">👥</span>
+                <span className="text-white text-xl"></span>
               </div>
               <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
             </div>
@@ -326,7 +326,7 @@ export function SourceSummaryHero() {
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/25">
-                <span className="text-white text-xl">🔄</span>
+                <span className="text-white text-xl"></span>
               </div>
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
             </div>
@@ -343,7 +343,7 @@ export function SourceSummaryHero() {
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/25">
-                <span className="text-white text-xl">📅</span>
+                <span className="text-white text-xl"></span>
               </div>
               <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
             </div>

@@ -52,7 +52,7 @@ jobs:
   # ============================================================================
 
   pre-scraping-snapshot:
-    name: "📸 Pre-Scraping Database Snapshot"
+    name: "Pre-Scraping Database Snapshot"
     runs-on: ubuntu-latest
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -303,15 +303,15 @@ jobs:
         run: pip install -r requirements.txt
       - name: Run Maryland AG Scraper (Known Issues)
         run: |
-          echo "⚠️ Running Maryland AG scraper - known to have website issues"
-          python scrapers/fetch_md_ag.py || echo "❌ Maryland AG scraper failed as expected"
+          echo "Running Maryland AG scraper - known to have website issues"
+          python scrapers/fetch_md_ag.py || echo "Maryland AG scraper failed as expected"
 
   # ============================================================================
   # SUMMARY JOB - Waits for all parallel jobs to complete
   # ============================================================================
 
   summary:
-    name: "📊 Scraping Summary & Database Changes"
+    name: "Scraping Summary & Database Changes"
     runs-on: ubuntu-latest
     needs: [pre-scraping-snapshot, government-scrapers, state-ag-group-1, state-ag-group-2, state-ag-group-3, state-ag-group-4, problematic-scrapers]
     if: always() # Run even if some jobs fail
@@ -340,21 +340,21 @@ jobs:
           path: /tmp/
       - name: Debug snapshot file
         run: |
-          echo "🔍 DEBUG: Checking snapshot file..."
-          ls -la /tmp/parallel_scraper_snapshot.json || echo "❌ Snapshot file not found"
+          echo "DEBUG: Checking snapshot file..."
+          ls -la /tmp/parallel_scraper_snapshot.json || echo "Snapshot file not found"
           if [ -f /tmp/parallel_scraper_snapshot.json ]; then
-            echo "📄 Snapshot file size: $(wc -c < /tmp/parallel_scraper_snapshot.json) bytes"
-            echo "📊 Snapshot preview (first 500 chars):"
+            echo "Snapshot file size: $(wc -c < /tmp/parallel_scraper_snapshot.json) bytes"
+            echo "Snapshot preview (first 500 chars):"
             head -c 500 /tmp/parallel_scraper_snapshot.json
             echo ""
           fi
       - name: Generate database change report
         id: database-report
         run: |
-          echo "📊 Generating database change report..."
+          echo "Generating database change report..."
           export SNAPSHOT_FILE=/tmp/parallel_scraper_snapshot.json
           python scrapers/database_change_tracker.py --report || {
-            echo "⚠️  Database report failed, setting default outputs"
+            echo "Database report failed, setting default outputs"
             echo "new_items=0" >> $GITHUB_OUTPUT
             echo "new_breaches=0" >> $GITHUB_OUTPUT
             echo "new_news=0" >> $GITHUB_OUTPUT
@@ -363,7 +363,7 @@ jobs:
       - name: Show today's daily activity context
         run: |
           echo ""
-          echo "📅 TODAY'S DAILY CONTEXT (1am to now):"
+          echo "TODAY'S DAILY CONTEXT (1am to now):"
           python scrapers/daily_change_tracker.py --today
       - name: Check job results
         run: |
@@ -376,8 +376,8 @@ jobs:
           echo "State AG Group 4 (ND,OK,VT,WI,TX): ${{ needs.state-ag-group-4.result }}"
           echo "Problematic Scrapers (MD): ${{ needs.problematic-scrapers.result }}"
           echo "================================="
-          echo "ℹ️  Note: California AG runs hourly in separate workflow"
-          echo "ℹ️  Note: RSS & API scrapers run in separate workflow"
+          echo "ℹ Note: California AG runs hourly in separate workflow"
+          echo "ℹ Note: RSS & API scrapers run in separate workflow"
 
           # Count successful jobs (excluding problematic scrapers from main count)
           success_count=0
@@ -390,29 +390,29 @@ jobs:
           [[ "${{ needs.state-ag-group-3.result }}" == "success" ]] && success_count=$((success_count + 1))
           [[ "${{ needs.state-ag-group-4.result }}" == "success" ]] && success_count=$((success_count + 1))
 
-          echo "✅ Successful core groups: $success_count/$total_count"
+          echo "Successful core groups: $success_count/$total_count"
 
           # Report on problematic scrapers separately
           if [[ "${{ needs.problematic-scrapers.result }}" == "success" ]]; then
-            echo "🔧 Problematic scrapers: Unexpectedly succeeded!"
+            echo "Problematic scrapers: Unexpectedly succeeded!"
           else
-            echo "⚠️ Problematic scrapers: Failed as expected (Maryland AG has known website issues)"
+            echo "Problematic scrapers: Failed as expected (Maryland AG has known website issues)"
           fi
 
           # Determine overall success - only fail if NO core groups succeeded
           if [ $success_count -eq $total_count ]; then
-            echo "🎉 All core scraper groups completed successfully!"
+            echo "All core scraper groups completed successfully!"
             WORKFLOW_SUCCESS=true
           elif [ $success_count -gt 0 ]; then
-            echo "⚠️ Some core scraper groups failed, but $success_count groups succeeded"
+            echo "Some core scraper groups failed, but $success_count groups succeeded"
             WORKFLOW_SUCCESS=true
           else
-            echo "❌ All core scraper groups failed"
+            echo "All core scraper groups failed"
             WORKFLOW_SUCCESS=false
           fi
 
           echo ""
-          echo "📊 DATABASE CHANGES SUMMARY:"
+          echo "DATABASE CHANGES SUMMARY:"
           echo "   Items Change: ${{ steps.database-report.outputs.new_items }}"
           echo "   Breaches Change: ${{ steps.database-report.outputs.new_breaches }}"
           echo "   News Change: ${{ steps.database-report.outputs.new_news }}"
@@ -431,7 +431,7 @@ jobs:
           NEW_AFFECTED=${NEW_AFFECTED:-0}
 
           # Debug: Show raw values received
-          echo "🔍 DEBUG: Raw values from database report:"
+          echo "DEBUG: Raw values from database report:"
           echo "   NEW_ITEMS='${{ steps.database-report.outputs.new_items }}'"
           echo "   NEW_BREACHES='${{ steps.database-report.outputs.new_breaches }}'"
           echo "   NEW_NEWS='${{ steps.database-report.outputs.new_news }}'"
@@ -439,41 +439,41 @@ jobs:
 
           # Validate that values are numeric and fix if needed
           if ! [[ "$NEW_ITEMS" =~ ^-?[0-9]+$ ]]; then
-            echo "⚠️  Warning: NEW_ITEMS '$NEW_ITEMS' is not numeric, defaulting to 0"
+            echo "Warning: NEW_ITEMS '$NEW_ITEMS'is not numeric, defaulting to 0"
             NEW_ITEMS=0
           fi
 
           if ! [[ "$NEW_BREACHES" =~ ^-?[0-9]+$ ]]; then
-            echo "⚠️  Warning: NEW_BREACHES '$NEW_BREACHES' is not numeric, defaulting to 0"
+            echo "Warning: NEW_BREACHES '$NEW_BREACHES'is not numeric, defaulting to 0"
             NEW_BREACHES=0
           fi
 
           if ! [[ "$NEW_NEWS" =~ ^-?[0-9]+$ ]]; then
-            echo "⚠️  Warning: NEW_NEWS '$NEW_NEWS' is not numeric, defaulting to 0"
+            echo "Warning: NEW_NEWS '$NEW_NEWS'is not numeric, defaulting to 0"
             NEW_NEWS=0
           fi
 
           if ! [[ "$NEW_AFFECTED" =~ ^-?[0-9]+$ ]]; then
-            echo "⚠️  Warning: NEW_AFFECTED '$NEW_AFFECTED' is not numeric, defaulting to 0"
+            echo "Warning: NEW_AFFECTED '$NEW_AFFECTED'is not numeric, defaulting to 0"
             NEW_AFFECTED=0
           fi
 
-          echo "✅ Validated values: items=$NEW_ITEMS, breaches=$NEW_BREACHES, news=$NEW_NEWS, affected=$NEW_AFFECTED"
+          echo "Validated values: items=$NEW_ITEMS, breaches=$NEW_BREACHES, news=$NEW_NEWS, affected=$NEW_AFFECTED"
 
           if [ "$NEW_ITEMS" -lt 0 ]; then
-            echo "ℹ️  Note: Negative values indicate database cleanup (duplicate removal)"
+            echo "ℹ Note: Negative values indicate database cleanup (duplicate removal)"
           elif [ "$NEW_ITEMS" -eq 0 ]; then
-            echo "ℹ️  No new items discovered in this run"
+            echo "ℹ No new items discovered in this run"
           else
-            echo "✅ $NEW_ITEMS new items discovered!"
+            echo "$NEW_ITEMS new items discovered!"
           fi
 
           # Final workflow status
           if [ "$WORKFLOW_SUCCESS" = "true" ]; then
-            echo "🎉 Workflow completed successfully!"
+            echo "Workflow completed successfully!"
             exit 0
           else
-            echo "❌ Workflow failed - no core scraper groups succeeded"
+            echo "Workflow failed - no core scraper groups succeeded"
             exit 1
           fi
 
@@ -482,7 +482,7 @@ jobs:
   # ============================================================================
 
   email-alerts:
-    name: "📧 Email Alert Notifications"
+    name: "Email Alert Notifications"
     runs-on: ubuntu-latest
     needs: summary
     if: ${{ always() && ((needs.summary.outputs.new_breaches > 0 && needs.summary.outputs.new_breaches != '' && needs.summary.outputs.new_breaches != 'null') || (needs.summary.outputs.new_items > 0 && needs.summary.outputs.new_items != '' && needs.summary.outputs.new_items != 'null')) }}
@@ -507,44 +507,44 @@ jobs:
           pip install requests  # Add requests for Resend API
       - name: Setup email preferences (if needed)
         run: |
-          echo "🔧 Ensuring email preferences are configured..."
-          python setup_email_preferences_github.py || echo "⚠️ Email setup failed or already exists"
+          echo "Ensuring email preferences are configured..."
+          python setup_email_preferences_github.py || echo "Email setup failed or already exists"
       - name: Send email alerts
         run: |
-          echo "📧 Processing email alerts for new breaches..."
-          echo "📊 New breaches: ${{ needs.summary.outputs.new_breaches }}"
-          echo "📊 New items: ${{ needs.summary.outputs.new_items }}"
+          echo "Processing email alerts for new breaches..."
+          echo "New breaches: ${{ needs.summary.outputs.new_breaches }}"
+          echo "New items: ${{ needs.summary.outputs.new_items }}"
           python scrapers/email_alerts.py --since-minutes 35
           echo ""
-          echo "✅ Email alert processing complete"
+          echo "Email alert processing complete"
       - name: Log alert summary
         run: |
-          echo "🚨 BREACH ALERT SUMMARY:"
-          echo "📊 New breaches detected: ${{ needs.summary.outputs.new_breaches }}"
-          echo "📊 Total new items: ${{ needs.summary.outputs.new_items }}"
-          echo "👥 Additional people affected: ${{ needs.summary.outputs.new_affected }}"
+          echo "BREACH ALERT SUMMARY:"
+          echo "New breaches detected: ${{ needs.summary.outputs.new_breaches }}"
+          echo "Total new items: ${{ needs.summary.outputs.new_items }}"
+          echo "Additional people affected: ${{ needs.summary.outputs.new_affected }}"
           echo ""
-          echo "🔗 View dashboard: https://bd4l.github.io/Breaches/"
-          echo "📧 Email alerts have been sent to subscribers"
+          echo "View dashboard: https://bd4l.github.io/Breaches/"
+          echo "Email alerts have been sent to subscribers"
 
   # ============================================================================
   # NOTIFICATION JOB - Send alerts if significant changes detected (Legacy)
   # ============================================================================
 
   notification:
-    name: "🔔 Breach Alert Notification (Legacy)"
+    name: "Breach Alert Notification (Legacy)"
     runs-on: ubuntu-latest
     needs: summary
     if: ${{ always() && needs.summary.outputs.new_breaches > 0 && needs.summary.outputs.new_breaches != '' && needs.summary.outputs.new_breaches != 'null' }}
     steps:
       - name: Send breach alert
         run: |
-          echo "🚨 BREACH ALERT: ${{ needs.summary.outputs.new_breaches }} new breach notifications detected!"
-          echo "📊 Total new items: ${{ needs.summary.outputs.new_items }}"
-          echo "👥 Additional people affected: ${{ needs.summary.outputs.new_affected }}"
+          echo "BREACH ALERT: ${{ needs.summary.outputs.new_breaches }} new breach notifications detected!"
+          echo "Total new items: ${{ needs.summary.outputs.new_items }}"
+          echo "Additional people affected: ${{ needs.summary.outputs.new_affected }}"
           echo ""
-          echo "🔗 View dashboard: https://hackermanmarlin.github.io/Breaches/"
+          echo "View dashboard: https://hackermanmarlin.github.io/Breaches/"
           echo ""
-          echo "📧 Email alerts are now handled by the email-alerts job above."
+          echo "Email alerts are now handled by the email-alerts job above."
 
 

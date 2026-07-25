@@ -26,7 +26,7 @@ jobs:
   # ============================================================================
 
   pre-scraping-snapshot:
-    name: "📸 Pre-Scraping Database Snapshot"
+    name: "Pre-Scraping Database Snapshot"
     runs-on: ubuntu-latest
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -57,7 +57,7 @@ jobs:
   # ============================================================================
 
   california-ag-scraper:
-    name: "🏛️ California AG Scraper"
+    name: "California AG Scraper"
     runs-on: ubuntu-latest
     needs: pre-scraping-snapshot
     env:
@@ -80,26 +80,26 @@ jobs:
         run: pip install -r requirements.txt
       - name: Log scraper start
         run: |
-          echo "🚀 Starting California AG scraper at $(date)"
-          echo "📊 Configuration:"
+          echo "Starting California AG scraper at $(date)"
+          echo "Configuration:"
           echo "   - Processing Mode: $CA_AG_PROCESSING_MODE"
           echo "   - Filter From Date: $CA_AG_FILTER_FROM_DATE"
           echo "   - Timeout: $CA_AG_TIMEOUT minutes"
           echo "   - Max Pages: $CA_AG_MAX_PAGES"
       - name: Run California AG Scraper
         run: |
-          echo "🏛️ Running California AG scraper..."
+          echo "Running California AG scraper..."
           python scrapers/fetch_california_ag.py
       - name: Log scraper completion
         run: |
-          echo "✅ California AG scraper completed at $(date)"
+          echo "California AG scraper completed at $(date)"
 
   # ============================================================================
   # SUMMARY JOB - Generate database change report
   # ============================================================================
 
   summary:
-    name: "📊 California AG Summary & Database Changes"
+    name: "California AG Summary & Database Changes"
     runs-on: ubuntu-latest
     needs: [pre-scraping-snapshot, california-ag-scraper]
     if: always() # Run even if scraper fails
@@ -138,13 +138,13 @@ jobs:
           echo "================================="
           
           if [[ "${{ needs.california-ag-scraper.result }}" == "success" ]]; then
-            echo "✅ California AG scraper completed successfully!"
+            echo "California AG scraper completed successfully!"
           else
-            echo "❌ California AG scraper failed"
+            echo "California AG scraper failed"
           fi
 
           echo ""
-          echo "📊 DATABASE CHANGES SUMMARY:"
+          echo "DATABASE CHANGES SUMMARY:"
           echo "   Items Change: ${{ steps.database-report.outputs.new_items }}"
           echo "   Breaches Change: ${{ steps.database-report.outputs.new_breaches }}"
           echo "   News Change: ${{ steps.database-report.outputs.new_news }}"
@@ -155,21 +155,21 @@ jobs:
           NEW_BREACHES="${{ steps.database-report.outputs.new_breaches }}"
 
           if [ "$NEW_ITEMS" -lt 0 ]; then
-            echo "ℹ️  Note: Negative values indicate database cleanup (duplicate removal)"
+            echo "ℹ Note: Negative values indicate database cleanup (duplicate removal)"
           elif [ "$NEW_ITEMS" -eq 0 ]; then
-            echo "ℹ️  No new items discovered in this California AG run"
+            echo "ℹ No new items discovered in this California AG run"
           else
-            echo "✅ $NEW_ITEMS new items discovered from California AG!"
+            echo "$NEW_ITEMS new items discovered from California AG!"
           fi
 
-          echo "🔗 View live dashboard: https://bd4l.github.io/Breaches/"
+          echo "View live dashboard: https://bd4l.github.io/Breaches/"
 
   # ============================================================================
   # EMAIL NOTIFICATIONS - Send alerts for new breaches
   # ============================================================================
 
   email-notifications:
-    name: "📧 Email Alert Notifications"
+    name: "Email Alert Notifications"
     runs-on: ubuntu-latest
     needs: [summary]
     if: ${{ (needs.summary.outputs.new_breaches > 0 && needs.summary.outputs.new_breaches != '' && needs.summary.outputs.new_breaches != 'null') || (needs.summary.outputs.new_items > 0 && needs.summary.outputs.new_items != '' && needs.summary.outputs.new_items != 'null') }}
@@ -191,5 +191,5 @@ jobs:
         run: pip install -r requirements.txt
       - name: Send email notifications
         run: |
-          echo "📧 Sending email notifications for ${{ needs.summary.outputs.new_breaches }} new breaches..."
+          echo "Sending email notifications for ${{ needs.summary.outputs.new_breaches }} new breaches..."
           python scrapers/email_alerts.py --source "California AG" --new-count "${{ needs.summary.outputs.new_breaches }}"

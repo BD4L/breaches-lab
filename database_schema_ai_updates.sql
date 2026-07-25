@@ -232,12 +232,12 @@ CREATE TRIGGER update_ai_report_usage_updated_at
 -- ============================================================================
 --
 -- Summary of changes:
--- ✅ Enhanced research_jobs table with AI-specific fields
--- ✅ Added ai_report_usage table for tracking and rate limiting
--- ✅ Created performance indexes
--- ✅ Updated RLS policies for security
--- ✅ Added helper functions for usage tracking and rate limiting
--- ✅ Created v_ai_reports view for dashboard
--- ✅ Added automatic timestamp triggers
+-- Enhanced research_jobs table with AI-specific fields
+-- Added ai_report_usage table for tracking and rate limiting
+-- Created performance indexes
+-- Updated RLS policies for security
+-- Added helper functions for usage tracking and rate limiting
+-- Created v_ai_reports view for dashboard
+-- Added automatic timestamp triggers
 --
 -- The database is now ready for AI agent integration!

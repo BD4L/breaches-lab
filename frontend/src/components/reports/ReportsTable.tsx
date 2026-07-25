@@ -438,7 +438,7 @@ export function ReportsTable({ filters = {} }: ReportsTableProps) {
         {reports.length === 0 && !loading && (
           <div className="text-center py-12">
             <div className="text-gray-500 dark:text-gray-400">
-              <div className="text-4xl mb-4">🤖</div>
+              <div className="text-4xl mb-4"></div>
               <h3 className="text-lg font-medium mb-2">No AI reports found</h3>
               <p className="text-sm mb-4">
                 Generate your first AI report by clicking the "AI Report" button on any breach in the Breach Notifications tab.

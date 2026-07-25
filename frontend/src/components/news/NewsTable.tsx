@@ -45,7 +45,7 @@ export function NewsTable({ filters }: NewsTableProps) {
           onClick={row.getToggleExpandedHandler()}
           className="p-1"
         >
-          {row.getIsExpanded() ? '📖' : '📄'}
+          {row.getIsExpanded() ?'':''}
         </Button>
       ),
       size: 40,
@@ -162,18 +162,18 @@ export function NewsTable({ filters }: NewsTableProps) {
         publicationDateRange: filters.publicationDateRange,
       }
 
-      console.log('📰 Loading news articles with params:', queryParams)
+      console.log('Loading news articles with params:', queryParams)
 
       const result = await getNewsArticles(queryParams)
       const { data: articles, error, count } = result
 
       if (error) {
-        console.error('❌ Error loading news articles:', error)
-        console.error('❌ Error details:', JSON.stringify(error, null, 2))
+        console.error('Error loading news articles:', error)
+        console.error('Error details:', JSON.stringify(error, null, 2))
         throw error
       }
 
-      console.log('📰 Loaded news articles:', articles?.length || 0, 'Total:', count)
+      console.log('Loaded news articles:', articles?.length || 0,'Total:', count)
 
       setData(articles || [])
       setTotalCount(count || 0)
@@ -202,7 +202,7 @@ export function NewsTable({ filters }: NewsTableProps) {
     return (
       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
         <div className="flex items-center">
-          <span className="text-red-500 mr-2">⚠️</span>
+          <span className="text-red-500 mr-2"></span>
           <div>
             <h3 className="text-red-800 dark:text-red-200 font-medium">Error Loading News</h3>
             <p className="text-red-600 dark:text-red-300 text-sm mt-1">{error}</p>
@@ -246,7 +246,7 @@ export function NewsTable({ filters }: NewsTableProps) {
                         {flexRender(header.column.columnDef.header, header.getContext())}
                         {header.column.getIsSorted() && (
                           <span className="text-blue-600 dark:text-blue-400">
-                            {header.column.getIsSorted() === 'desc' ? '↓' : '↑'}
+                            {header.column.getIsSorted() ==='desc'?'':''}
                           </span>
                         )}
                       </div>
@@ -287,7 +287,7 @@ export function NewsTable({ filters }: NewsTableProps) {
                                 rel="noopener noreferrer"
                                 className="text-blue-600 dark:text-blue-400 hover:underline"
                               >
-                                View Original →
+                                View Original
                               </a>
                             )}
                           </div>

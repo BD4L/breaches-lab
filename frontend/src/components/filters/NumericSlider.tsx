@@ -143,7 +143,7 @@ export function NumericSlider({
         {hasValue && (
           <div className="text-center">
             <div className="inline-flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <span className="text-lg">🚨</span>
+              <span className="text-lg"></span>
               <div className="text-left">
                 <div className="text-sm font-medium text-blue-800 dark:text-blue-200">
                   Alert Threshold

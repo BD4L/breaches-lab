@@ -218,7 +218,7 @@ export function FilterSidebar({ isOpen, onClose, currentView, onFiltersChange }:
 
       const sourceIds = sources?.map(s => s.id) || []
 
-      console.log('🎯 Breaches of the Day sources found:', sources?.map(s => ({ id: s.id, name: s.name, type: s.type })))
+      console.log('Breaches of the Day sources found:', sources?.map(s => ({ id: s.id, name: s.name, type: s.type })))
 
       // Get last 24 hours range (more accurate for frequent scraping)
       const now = new Date()
@@ -235,7 +235,7 @@ export function FilterSidebar({ isOpen, onClose, currentView, onFiltersChange }:
       const last24HoursStart = formatDateForPicker(last24Hours)
       const nowEnd = formatDateForPicker(now)
 
-      console.log('🎯 Setting Breaches Of The Day filter with dates:', {
+      console.log('Setting Breaches Of The Day filter with dates:', {
         last24HoursStart,
         nowEnd,
         affectedKnown: true
@@ -266,7 +266,7 @@ export function FilterSidebar({ isOpen, onClose, currentView, onFiltersChange }:
         publicationDateRange: {}
       }
 
-      console.log('🚀 Applying Breaches Of The Day filter:', filterConfig)
+      console.log('Applying Breaches Of The Day filter:', filterConfig)
       onFiltersChange(filterConfig)
     } catch (error) {
       console.error('Failed to apply Breaches of the Day filter:', error)
@@ -303,12 +303,12 @@ export function FilterSidebar({ isOpen, onClose, currentView, onFiltersChange }:
 
   const getCategoryIcon = (category: string): string => {
     switch (category) {
-      case 'State AG Sites': return '🏛️'
-      case 'Government Portals': return '🏢'
-      case 'RSS News Feeds': return '📰'
-      case 'Specialized Breach Sites': return '🔍'
-      case 'Company IR Sites': return '💼'
-      default: return '📊'
+      case'State AG Sites': return''
+      case'Government Portals': return''
+      case'RSS News Feeds': return''
+      case'Specialized Breach Sites': return''
+      case'Company IR Sites': return''
+      default: return''
     }
   }
 
@@ -369,7 +369,7 @@ export function FilterSidebar({ isOpen, onClose, currentView, onFiltersChange }:
               onClick={applyBreachesOfTheDayFilter}
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition-all duration-200 flex items-center justify-center space-x-2"
             >
-              <span className="text-lg">⚡</span>
+              <span className="text-lg"></span>
               <span>Breaches Of The Day</span>
             </Button>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
@@ -440,7 +440,7 @@ export function FilterSidebar({ isOpen, onClose, currentView, onFiltersChange }:
                 {minAffected > 0 && (
                   <div className="p-3 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
                     <div className="flex items-center space-x-2">
-                      <span className="text-lg">🚨</span>
+                      <span className="text-lg"></span>
                       <div>
                         <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
                           Alert Threshold Set
@@ -659,7 +659,7 @@ export function FilterSidebar({ isOpen, onClose, currentView, onFiltersChange }:
                                     ? 'border-blue-500 bg-blue-500'
                                     : 'border-gray-300 dark:border-gray-600'
                                 }`}>
-                                  {isSelected && <span className="text-white text-xs">✓</span>}
+                                  {isSelected && <span className="text-white text-xs"></span>}
                                 </div>
                                 <span className="text-sm text-gray-900 dark:text-white">
                                   {source.name}

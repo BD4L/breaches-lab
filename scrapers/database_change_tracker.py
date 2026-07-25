@@ -48,7 +48,7 @@ def get_database_stats():
         
         stats = {}
         
-        logger.info("📊 Fetching database statistics...")
+        logger.info("Fetching database statistics...")
         
         # Overall counts from scraped_items table
         response = supabase.table("scraped_items").select("*", count="exact", head=True).execute()
@@ -56,7 +56,7 @@ def get_database_stats():
         logger.info(f"Total items in database: {stats['total_items']}")
         
         # Get all data from the view and categorize properly
-        logger.info("📋 Fetching breach dashboard data for categorization...")
+        logger.info("Fetching breach dashboard data for categorization...")
 
         # Fetch all records using pagination to avoid 1000 record limit
         all_data = []
@@ -79,7 +79,7 @@ def get_database_stats():
             offset += page_size
 
         if not all_data:
-            logger.warning("⚠️ No data returned from v_breach_dashboard")
+            logger.warning("No data returned from v_breach_dashboard")
             stats['breach_count'] = 0
             stats['news_count'] = 0
             stats['total_affected'] = 0
@@ -144,7 +144,7 @@ def get_database_stats():
         
         stats['timestamp'] = datetime.now().isoformat()
         
-        logger.info("✅ Database statistics collected successfully")
+        logger.info("Database statistics collected successfully")
         return stats
         
     except Exception as e:
@@ -158,7 +158,7 @@ def take_snapshot():
     """
     Take a snapshot of current database state.
     """
-    logger.info("📸 Taking database snapshot...")
+    logger.info("Taking database snapshot...")
     
     stats = get_database_stats()
     if not stats:
@@ -169,8 +169,8 @@ def take_snapshot():
         with open(SNAPSHOT_FILE, 'w') as f:
             json.dump(stats, f, indent=2)
         
-        logger.info(f"✅ Snapshot saved to {SNAPSHOT_FILE}")
-        logger.info(f"📊 Current totals: {stats['total_items']} items, {stats['breach_count']} breaches, {stats['news_count']} news")
+        logger.info(f"Snapshot saved to {SNAPSHOT_FILE}")
+        logger.info(f"Current totals: {stats['total_items']} items, {stats['breach_count']} breaches, {stats['news_count']} news")
         return True
         
     except Exception as e:
@@ -181,7 +181,7 @@ def generate_report():
     """
     Generate a report comparing current state to snapshot.
     """
-    logger.info("📊 Generating database change report...")
+    logger.info("Generating database change report...")
     
     # Load snapshot
     try:
@@ -228,55 +228,55 @@ def generate_report():
     
     # Generate report
     print("\n" + "="*80)
-    print("🚨 BREACH SCRAPING RESULTS SUMMARY")
+    print("BREACH SCRAPING RESULTS SUMMARY")
     print("="*80)
     
-    print(f"📅 Scraping Period: {before_stats['timestamp']} → {after_stats['timestamp']}")
+    print(f"Scraping Period: {before_stats['timestamp']} {after_stats['timestamp']}")
     print()
     
     # Overall changes
-    print("📊 OVERALL CHANGES:")
-    print(f"   📄 Total Items: {before_stats['total_items']:,} → {after_stats['total_items']:,} (+{changes['total_items']:,})")
-    print(f"   🚨 Breach Records: {before_stats['breach_count']:,} → {after_stats['breach_count']:,} (+{changes['breach_count']:,})")
-    print(f"   📰 News Articles: {before_stats['news_count']:,} → {after_stats['news_count']:,} (+{changes['news_count']:,})")
-    print(f"   👥 People Affected: {before_stats['total_affected']:,} → {after_stats['total_affected']:,} (+{changes['total_affected']:,})")
+    print("OVERALL CHANGES:")
+    print(f"Total Items: {before_stats['total_items']:,} {after_stats['total_items']:,} (+{changes['total_items']:,})")
+    print(f"Breach Records: {before_stats['breach_count']:,} {after_stats['breach_count']:,} (+{changes['breach_count']:,})")
+    print(f"News Articles: {before_stats['news_count']:,} {after_stats['news_count']:,} (+{changes['news_count']:,})")
+    print(f"People Affected: {before_stats['total_affected']:,} {after_stats['total_affected']:,} (+{changes['total_affected']:,})")
     print()
     
     # Source type breakdown
     if source_type_changes:
-        print("📋 NEW ITEMS BY CATEGORY:")
+        print("NEW ITEMS BY CATEGORY:")
         for source_type, count in sorted(source_type_changes.items(), key=lambda x: x[1], reverse=True):
             print(f"   {source_type}: +{count:,}")
         print()
     
     # Individual source breakdown
     if source_changes:
-        print("🔍 NEW ITEMS BY SOURCE:")
+        print("NEW ITEMS BY SOURCE:")
         for source, count in sorted(source_changes.items(), key=lambda x: x[1], reverse=True):
             print(f"   {source}: +{count:,}")
         print()
     
     # Summary
     if changes['total_items'] > 0:
-        print("✅ SCRAPING SUCCESS!")
-        print(f"   🎯 {changes['total_items']:,} new items discovered")
+        print("SCRAPING SUCCESS!")
+        print(f"{changes['total_items']:,} new items discovered")
         if changes['breach_count'] > 0:
-            print(f"   🚨 {changes['breach_count']:,} new breach notifications")
+            print(f"{changes['breach_count']:,} new breach notifications")
         if changes['news_count'] > 0:
-            print(f"   📰 {changes['news_count']:,} new news articles")
+            print(f"{changes['news_count']:,} new news articles")
         if changes['total_affected'] > 0:
-            print(f"   👥 {changes['total_affected']:,} additional people affected")
+            print(f"{changes['total_affected']:,} additional people affected")
     elif changes['total_items'] < 0:
-        print("🧹 DATABASE CLEANUP DETECTED")
-        print(f"   📉 {abs(changes['total_items']):,} items removed (likely duplicates)")
+        print("DATABASE CLEANUP DETECTED")
+        print(f"{abs(changes['total_items']):,} items removed (likely duplicates)")
         if changes['breach_count'] < 0:
-            print(f"   🗑️ {abs(changes['breach_count']):,} duplicate breaches removed")
+            print(f"{abs(changes['breach_count']):,} duplicate breaches removed")
         if changes['news_count'] > 0:
-            print(f"   📰 {changes['news_count']:,} new news articles added")
+            print(f"{changes['news_count']:,} new news articles added")
         if changes['total_affected'] > 0:
-            print(f"   👥 {changes['total_affected']:,} people affected (from new items)")
+            print(f"{changes['total_affected']:,} people affected (from new items)")
     else:
-        print("ℹ️  NO NEW ITEMS FOUND")
+        print("ℹ NO NEW ITEMS FOUND")
         print("   All sources appear to be up-to-date")
     
     print("="*80)

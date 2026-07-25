@@ -6,65 +6,65 @@
 
 ---
 
-## 🎯 KEY FINDINGS
+## KEY FINDINGS
 
-### ✅ READY FOR IMMEDIATE IMPLEMENTATION
+### READY FOR IMMEDIATE IMPLEMENTATION
 
 #### 1. Texas AG - Salesforce Portal (NEW)
 - **URL**: https://oag.my.site.com/datasecuritybreachreport/apex/DataSecurityReportsPage
 - **Structure**: Modern Salesforce portal with searchable table
 - **Data Quality**: Excellent - organization names, dates, affected counts, descriptions
 - **Implementation**: Puppeteer/Selenium required for JavaScript
-- **Priority**: 🟢 HIGH - Large state, excellent data structure
+- **Priority**: HIGH - Large state, excellent data structure
 
 #### 2. Washington AG - HTML Table
 - **URL**: https://www.atg.wa.gov/data-breach-notifications
 - **Structure**: Clean HTML table with PDF links
 - **Data Quality**: Excellent - all key fields present
 - **Implementation**: Simple HTTP + BeautifulSoup
-- **Priority**: 🟢 HIGH - Easy implementation, good data
+- **Priority**: HIGH - Easy implementation, good data
 
 #### 3. Wisconsin DATCP - Current + Archive
 - **URL**: https://datcp.wi.gov/pages/programs_services/databreaches.aspx
 - **Structure**: Current year + historical archive system
 - **Data Quality**: Excellent - detailed breach information
 - **Implementation**: HTTP requests for multiple pages
-- **Priority**: 🟢 HIGH - Comprehensive historical data
+- **Priority**: HIGH - Comprehensive historical data
 
 #### 4. Hawaii AG - Searchable Table (CORRECTED!)
 - **URL**: https://cca.hawaii.gov/ocp/notices/security-breach/
 - **Structure**: JavaScript table with pagination (138 entries)
 - **Data Quality**: Excellent - case numbers, breach types, Hawaii resident counts, PDF links
 - **Implementation**: Puppeteer/Selenium for JavaScript table
-- **Priority**: 🟢 HIGH - Much better than expected!
+- **Priority**: HIGH - Much better than expected!
 
 ---
 
-### 📄 PDF-BASED SOURCES (Medium Priority)
+### PDF-BASED SOURCES (Medium Priority)
 
 #### 5. Indiana AG - Annual Reports
 - **URL**: https://www.in.gov/attorneygeneral/consumer-protection-division/id-theft-prevention/security-breaches/
 - **Structure**: Annual PDF reports (2014-2025)
 - **Data Quality**: Good - structured data in PDF format
 - **Implementation**: PDF download + text extraction
-- **Priority**: 🟡 MEDIUM - Requires PDF parsing infrastructure
+- **Priority**: MEDIUM - Requires PDF parsing infrastructure
 
 #### 6. Massachusetts AG - Monthly PDF Collections (CORRECTED!)
 - **URL Pattern**: https://www.mass.gov/lists/data-breach-notification-letters-[month]-[year]
 - **Structure**: Monthly organized PDF collections with 100+ breaches/month
 - **Data Quality**: Excellent - complete notification letters with case numbers
 - **Implementation**: HTTP requests + PDF parsing
-- **Priority**: 🟡 MEDIUM - High volume, requires PDF processing
+- **Priority**: MEDIUM - High volume, requires PDF processing
 
 ---
 
-### ❌ PROBLEMATIC SOURCES
+### PROBLEMATIC SOURCES
 
 *(None identified! All analyzed sites have good structure for scraping)*
 
 ---
 
-## 🚀 IMMEDIATE ACTION PLAN
+## IMMEDIATE ACTION PLAN
 
 ### Week 1-2: High-Value Quick Wins
 1. **Implement Texas AG scraper** - Highest priority, modern portal
@@ -84,7 +84,7 @@
 
 ---
 
-## 📊 EXPECTED IMPACT
+## EXPECTED IMPACT
 
 ### Data Volume Increase
 - **Texas AG**: +50-100 breaches/month
@@ -102,7 +102,7 @@
 
 ---
 
-## 🛠️ TECHNICAL REQUIREMENTS
+## TECHNICAL REQUIREMENTS
 
 ### For Immediate Implementation
 - **Puppeteer/Selenium**: For Texas AG Salesforce portal and Hawaii AG JavaScript table
@@ -122,7 +122,7 @@
 
 ---
 
-## 🎯 SUCCESS METRICS
+## SUCCESS METRICS
 
 ### Short-term (30 days)
 - [ ] Texas AG scraper operational
@@ -145,7 +145,7 @@
 
 ---
 
-## 📋 NEXT STEPS
+## NEXT STEPS
 
 1. **Review and approve** this analysis
 2. **Prioritize implementation** based on business needs

@@ -1,334 +1,121 @@
-# Comprehensive Breach Data Aggregator
+# Breaches Lab
 
-## Overview
+Staging mirror of the breach data aggregator. **This repository is not production.**
 
-This project aggregates data related to data breaches and security incidents from a wide array of sources. These sources include government portals (like SEC EDGAR and State Attorney General websites), cybersecurity news RSS feeds, direct API integrations (e.g., HIBP), company investor relations pages, and custom scraping solutions (like using Apify for specific state data).
+It exists so that scraper changes, schema migrations and dashboard work can be tested without
+touching the live site or the live database. See [Relationship to production](#relationship-to-production)
+before running anything here.
 
-The collected data is standardized and stored in a Supabase PostgreSQL database. A simple, read-only web interface, hosted via GitHub Pages, provides a dashboard to view the aggregated breach information. The entire data collection process is automated using GitHub Actions, which run the scraper scripts daily.
+## What this project does
 
-## Features
+It collects public data-breach notifications from government portals, regulatory filings, vendor
+APIs and security news feeds, normalises them into a single Postgres schema, and serves them as a
+searchable dashboard.
 
-*   **Diverse Data Sourcing:** Scrapes and ingests data from over 25 distinct sources.
-*   **Source Categories:**
-    *   Governmental Filings (SEC EDGAR 8-K)
-    *   Health Sector Breach Portals (HHS OCR)
-    *   State Attorney General (AG) Data Breach Notification Sites (13 states)
-    *   Cybersecurity News RSS Feeds (10 sources, configurable)
-    *   Company Investor Relations (IR) News Sections (5 major tech companies, configurable)
-    *   Specialized Breach Listing Sites (BreachSense)
-    *   Breach Databases via API (HIBP)
-    *   Custom Scraper Integrations (e.g., Texas AG data via Apify)
-*   **Automated Collection:** Daily data updates via a GitHub Actions workflow.
-*   **Centralized Storage:** Uses Supabase (PostgreSQL) for robust and accessible data storage.
-*   **Basic Dashboard:** A simple frontend hosted on GitHub Pages to view the latest aggregated data.
-*   **Configurable Sources:** News feeds and company IR sites can be configured via `config.yaml`.
+- **24 scrapers** covering 16 state Attorney General portals, federal sources (SEC EDGAR 8-K,
+  HHS OCR), APIs (Have I Been Pwned), and security news RSS feeds.
+- **Supabase Postgres** as the datastore, written by scrapers with a service key and read by the
+  browser with an anon key.
+- **Astro + React + Tailwind** frontend, built to static files and published to GitHub Pages.
+- **GitHub Actions** for orchestration, on cron schedules.
 
-## Data Sources
+## Repository layout
 
-The project gathers data from several categories:
-
-*   **US Federal Government:**
-    *   SEC EDGAR 8-K Filings (for material cybersecurity incidents)
-    *   HHS OCR Breach Portal (healthcare breaches)
-
-*   **US State Attorney General Portals & Similar:**
-    *   California, Delaware, Hawaii, Indiana, Iowa, Maine, Maryland, Massachusetts, Montana, New Hampshire, New Jersey (Cybersecurity), North Dakota, Oklahoma (Cybersecurity), Texas (via Apify actor), Vermont, Wisconsin (DATCP).
-*   **Cybersecurity News & Reporting Sites:**
-    *   KrebsOnSecurity, BleepingComputer, The Hacker News, SecurityWeek, Dark Reading, DataBreaches.net, Cybersecurity Ventures, Reddit r/cybersecurity, Reddit r/databreaches. (Configurable via `config.yaml`)
-    *   BreachSense
-
-*   **Company Investor Relations (IR) Pages:**
-    *   Microsoft, Apple, Amazon, Alphabet, Meta. (Configurable via `config.yaml`)
-*   **API-based Services:**
-    *   Have I Been Pwned (HIBP) - Breach data for websites.
-
-For a detailed list of configurable news feeds and company IR sites, please see the `config.yaml` file.
-
-## Tech Stack
-
-*   **Backend & Scrapers:** Python 3.10
-    *   `requests`: For making HTTP requests.
-    *   `BeautifulSoup4`: For parsing HTML content.
-    *   `feedparser`: For parsing RSS/Atom feeds.
-    *   `python-dateutil`: For flexible date parsing.
-    *   `PyYAML`: For reading `config.yaml`.
-    *   `apify-client`: For interacting with the Apify platform.
-*   **Database:** Supabase (PostgreSQL)
-*   **Automation:** GitHub Actions
-*   **Frontend Dashboard:** HTML, CSS, JavaScript (hosted on GitHub Pages)
-
-## Setup and Installation
-
-### Prerequisites
-
-*   Python 3.10 or newer
-*   pip (Python package installer)
-*   Git
-
-### 1. Clone Repository
-
-```bash
-git clone https://github.com/your-username/your-repo-name.git # Replace with your repo URL
-cd your-repo-name
+```
+scrapers/              One module per source, plus shared logging and change tracking
+utils/                 Supabase client wrapper used by every scraper
+frontend/              Astro + React dashboard (34 components)
+  src/lib/             Supabase queries and formatting helpers
+  src/components/      Dashboard, filters, breach detail, shared UI
+supabase/functions/    Edge Functions for report generation
+.github/workflows/     6 workflows (see below)
+docs/                  Per-scraper implementation notes
+database_schema*.sql   Table definitions and migrations
+config.yaml            RSS feeds and per-source settings
 ```
 
-### 2. Install Dependencies
+## Workflows
+
+| Workflow | Schedule | Purpose |
+| --- | --- | --- |
+| `paralell.yml` | every 30 min | Runs most scrapers, grouped into parallel jobs |
+| `california-ag-scraper.yml` | hourly | California AG, with before/after database snapshots |
+| `rss-api-scrapers.yml` | every 2 h | News feeds and API sources |
+| `daily-report.yml` | daily 01:00 UTC | Activity summary and email alerts |
+| `cali.yml` | every 30 min | Legacy; overlaps `paralell.yml` |
+| `deploy-frontend.yml` | on push to `frontend/**` | Builds and publishes the dashboard |
+
+**All scheduled workflows are disabled in this repository by default.** They were disabled
+deliberately so that a fresh clone does not immediately start scraping government sites or writing
+to a database. Enable individually from the Actions tab when you intend to test one.
+
+## Local setup
+
+### Scrapers
 
 ```bash
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+export SUPABASE_URL="https://<project>.supabase.co"
+export SUPABASE_SERVICE_KEY="<service-role-key>"
+python scrapers/fetch_delaware_ag.py
 ```
 
-### 3. Supabase Setup
+Scrapers write to `scraped_items`, keyed on a unique `item_url`. Most skip rows that already exist
+rather than updating them.
 
-*   **Create a Supabase Project:**
-    1.  Go to [Supabase.io](https://supabase.io) and sign up/log in.
-    2.  Create a new project. Choose your region.
-    3.  Save your project's **URL** and **anon key** (for the frontend) and **service_role key** (for the scrapers).
-*   **Database Schema:**
-    You need to create two main tables in your Supabase SQL Editor: `data_sources` and `scraped_items`.
-
-    **`data_sources` Table:**
-    This table stores information about where the data comes from.
-    ```sql
-    CREATE TABLE data_sources (
-        id BIGINT PRIMARY KEY, -- Manually assigned ID, must match scraper configs
-        name TEXT NOT NULL UNIQUE,
-        url TEXT, -- Main URL of the data source
-        type TEXT, -- e.g., 'State AG', 'News Feed', 'API', 'Government Portal'
-        description TEXT,
-        created_at TIMESTAMPTZ DEFAULT NOW()
-    );
-    ```
-    *Example `source_id` values to insert into `data_sources` (ensure these match the `source_id` used in each scraper script and `config.yaml`):*
-      *   1: SEC EDGAR 8-K
-      *   2: HHS OCR
-      *   3-5: Delaware, California, Washington AGs
-      *   6-18: Other State AGs/Cybersecurity sites (HI, IN, IA, ME, MD, MA, MT, NH, NJ, ND, OK, VT, WI)
-      *   19: BreachSense
-      *   20-29: Cybersecurity News Feeds (from `config.yaml`)
-      *   30: Privacy Rights Clearinghouse
-      *   31-35: Company IR Sites (from `config.yaml`)
-      *   36: Have I Been Pwned (HIBP) API
-      *   37: Texas AG (via Apify)
-
-    **`scraped_items` Table:**
-    This table stores the actual breach/vulnerability records with comprehensive fields for different data types.
-    ```sql
-    CREATE TABLE scraped_items (
-        id BIGSERIAL PRIMARY KEY,
-        source_id BIGINT NOT NULL REFERENCES data_sources(id),
-        item_url TEXT UNIQUE, -- Unique URL for the specific breach/article page
-        title TEXT NOT NULL,
-        publication_date TIMESTAMPTZ,
-        scraped_at TIMESTAMPTZ DEFAULT NOW(),
-        summary_text TEXT,
-        full_content TEXT, -- Optional, for full article text if scraped
-        raw_data_json JSONB, -- Store original or additional data from source
-        tags_keywords TEXT[], -- Array of tags/keywords
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-
-        -- STANDARDIZED BREACH FIELDS (for cross-portal analysis)
-        affected_individuals INTEGER, -- Number of people affected
-        breach_date TEXT, -- When incident occurred (flexible text field)
-        reported_date DATE, -- When reported to authority
-        notice_document_url TEXT, -- Link to official notice document
-        what_was_leaked TEXT, -- What information was compromised
-
-        -- SEC-SPECIFIC FIELDS (for SEC EDGAR 8-K filings)
-        cik TEXT, -- Central Index Key (company identifier)
-        ticker_symbol TEXT, -- Stock ticker
-        accession_number TEXT, -- Unique EDGAR filing ID
-        form_type TEXT, -- 8-K, 8-K/A, 10-K, 10-Q, etc.
-        filing_date DATE, -- When filed with SEC
-        report_date DATE, -- Period of report
-        primary_document_url TEXT, -- Direct link to main filing document
-        xbrl_instance_url TEXT, -- Link to XBRL instance document
-        items_disclosed TEXT[], -- 8-K items (1.05, 8.01, etc.)
-        is_cybersecurity_related BOOLEAN DEFAULT FALSE,
-        is_amendment BOOLEAN DEFAULT FALSE,
-        is_delayed_disclosure BOOLEAN DEFAULT FALSE,
-
-        -- CYBERSECURITY INCIDENT DETAILS
-        incident_nature_text TEXT,
-        incident_scope_text TEXT,
-        incident_timing_text TEXT,
-        incident_impact_text TEXT,
-        incident_unknown_details_text TEXT,
-        incident_discovery_date DATE,
-        incident_disclosure_date DATE,
-        incident_containment_date DATE,
-
-        -- IMPACT ASSESSMENT
-        estimated_cost_min DECIMAL,
-        estimated_cost_max DECIMAL,
-        estimated_cost_currency TEXT DEFAULT 'USD',
-        data_types_compromised TEXT[], -- Types of data affected (PII, PHI, etc.)
-
-        -- DOCUMENT ANALYSIS
-        exhibit_urls TEXT[], -- Links to exhibits
-        keywords_detected TEXT[], -- Specific cybersecurity keywords found
-        keyword_contexts JSONB, -- Context around detected keywords
-        file_size_bytes INTEGER, -- Size of filing document
-
-        -- BUSINESS CONTEXT
-        business_description TEXT,
-        industry_classification TEXT
-    );
-    ```
-
-    **Note:** The actual database includes 44+ fields optimized for comprehensive breach data collection across multiple source types (State AGs, SEC filings, news feeds, etc.). See `database_schema.sql` for the complete schema.
-
-### 4. API Keys and Environment Variables (Local Development)
-
-For local execution of certain scrapers, create a `.env` file in the project root:
-```
-SUPABASE_URL="your_supabase_project_url"
-SUPABASE_SERVICE_KEY="your_supabase_service_role_key"
-
-# Required for HIBP API scraper
-HIBP_API_KEY="your_hibp_api_key"
-
-
-
-# Required for Apify integration (Texas scraper)
-APIFY_API_TOKEN="your_apify_api_token"
-APIFY_TEXAS_BREACH_ACTOR_ID="your_apify_actor_id_for_texas_data"
-```
-**Important:** Ensure `.env` is listed in your `.gitignore` file to prevent committing secrets.
-
-### 5. GitHub Secrets (for Automation)
-
-For the GitHub Actions workflow to run successfully, configure the following secrets in your GitHub repository settings (Settings -> Secrets and variables -> Actions -> New repository secret):
-
-*   `SUPABASE_URL`: Your Supabase project URL.
-*   `SUPABASE_SERVICE_KEY`: Your Supabase service_role key.
-*   `HIBP_API_KEY`: Your Have I Been Pwned API key.
-*   `APIFY_API_TOKEN`: Your Apify API token.
-*   `APIFY_TEXAS_BREACH_ACTOR_ID`: The ID of your Apify actor for Texas data.
-
-## Running Scrapers Locally
-
-You can run individual scraper scripts from the project root directory:
+### Frontend
 
 ```bash
-# Example:
-python scrapers/fetch_sec_edgar_8k.py
-python scrapers/fetch_hhs_ocr.py
-python scrapers/fetch_cybersecurity_news.py
-# ...and so on for other scrapers.
+cd frontend
+npm ci
+cp .env.example .env.local     # fill in the two PUBLIC_SUPABASE_* values
+npm run dev
 ```
-Ensure your environment variables are set (e.g., loaded from `.env` if you use a library like `python-dotenv`, or set manually in your shell).
 
-## GitHub Actions Automation
-
-The system uses **two separate workflows** for optimal reliability and performance:
-
-### **Main State Portal Scrapers** (`.github/workflows/paralell.yml`)
-Handles critical government and state attorney general portals:
-
-**Execution Strategy:**
-*   **5 parallel groups** run simultaneously for optimal speed
-*   **Government & Federal** (SEC EDGAR 8-K, HHS OCR)
-*   **State AG Groups 1-4** (organized by geographic/processing similarity)
-*   **Problematic Scrapers** (Maryland AG - isolated due to website issues)
-
-**Schedule & Triggers:**
-*   Runs **every 30 minutes** for real-time breach detection
-*   Can be triggered manually from the Actions tab
-*   Uses configured GitHub Secrets for API keys and Supabase credentials
-
-### **RSS & API Scrapers** (`.github/workflows/rss-api-scrapers.yml`)
-Handles news feeds and API-based sources independently:
-
-**Sources:**
-*   **BreachSense** - Breach intelligence platform
-*   **Cybersecurity News** - RSS feeds from security publications
-*   **Company IR** - Investor relations pages
-*   **HIBP API** - Have I Been Pwned breach data
-
-**Schedule & Benefits:**
-*   Runs **every 2 hours** (less frequent than critical portals)
-*   **Independent execution** - RSS failures don't affect state portal scrapers
-*   **Separate email alerts** - Dedicated notifications for RSS/API discoveries
-
-**Performance:**
-*   **Execution time**: ~8-12 minutes per workflow
-*   **Failure isolation**: Each workflow operates independently
-*   **Comprehensive reporting**: Summary jobs show results for each workflow type
-
-## Viewing the Dashboard
-
-The project includes a simple frontend dashboard to display the aggregated data. It's located in the `/docs` folder and is designed to be hosted using GitHub Pages.
-
-*   **Setup GitHub Pages:**
-    1.  Go to your repository on GitHub.
-    2.  Click on "Settings".
-    3.  Navigate to the "Pages" section (under "Code and automation").
-    4.  Under "Build and deployment", select "Deploy from a branch" as the Source.
-    5.  Choose the `main` (or `master`) branch and the `/docs` folder as the source. Click "Save".
-*   **Accessing the Dashboard:**
-    GitHub Pages will provide a URL for your live site (e.g., `https://your-username.github.io/your-repo-name/`). It might take a few minutes for the site to become available after the first deployment.
-    The `SUPABASE_URL` and `SUPABASE_ANON_KEY` used by the frontend dashboard are hardcoded in `docs/script.js`. Ensure these are correct for your Supabase project.
+`npm run build` produces static output in `frontend/dist`.
 
 ## Configuration
 
-The `config.yaml` file in the project root is used to configure:
-*   `cybersecurity_news_feeds`: A list of RSS/Atom feeds for cybersecurity news. Each entry requires `name`, `url`, and `source_id`.
-*   `company_ir_sites`: A list of company investor relations websites to monitor. Each entry requires `name`, `url`, and `source_id`. Optional `subpage_hints` can be added to guide the scraper to specific news sections if the default keywords are not sufficient.
+Scrapers read connection details from the environment:
 
-## Database Schema Summary
+| Variable | Used by | Notes |
+| --- | --- | --- |
+| `SUPABASE_URL` | all scrapers | Project REST URL |
+| `SUPABASE_SERVICE_KEY` | all scrapers | Service role key. Server-side only, never in the frontend |
+| `PUBLIC_SUPABASE_URL` | frontend | Inlined into the browser bundle at build time |
+| `PUBLIC_SUPABASE_ANON_KEY` | frontend | Inlined into the browser bundle at build time |
 
-### `data_sources` Table
-Stores metadata about each data source.
-*   `id` (BIGINT, PK): Unique identifier for the source. Must be manually assigned and correspond to scraper configurations.
-*   `name` (TEXT, NOT NULL, UNIQUE): Human-readable name of the source (e.g., "SEC EDGAR 8-K", "KrebsOnSecurity").
-*   `url` (TEXT): The main URL for the data source, if applicable.
-*   `type` (TEXT): Category of the source (e.g., "State AG", "News Feed", "API").
-*   `description` (TEXT): Optional brief description of the source.
-*   `created_at` (TIMESTAMPTZ, default NOW()): Timestamp of when the source record was created.
+Anything prefixed `PUBLIC_` is compiled into the published JavaScript and is readable by any
+visitor. Only put values there that are safe to disclose, and rely on row level security rather
+than key secrecy to protect the database.
 
-### `scraped_items` Table
-Stores the individual breach/vulnerability/news items collected with comprehensive fields for different data types.
+## Relationship to production
 
-**Core Fields:**
-*   `id` (BIGSERIAL, PK): Auto-incrementing primary key for each scraped item.
-*   `source_id` (BIGINT, FK to `data_sources.id`): Identifies which data source the item came from.
-*   `item_url` (TEXT, UNIQUE): The unique URL pointing to the specific breach report, news article, or vulnerability detail page. This is a key field for avoiding duplicates.
-*   `title` (TEXT, NOT NULL): Title of the item (e.g., company name for a breach, article title, vulnerability name).
-*   `publication_date` (TIMESTAMPTZ): The date the item was officially published or reported.
-*   `scraped_at` (TIMESTAMPTZ, default NOW()): Timestamp of when the item was scraped by the system.
-*   `summary_text` (TEXT): A brief summary or description of the item.
-*   `full_content` (TEXT): Optional field to store the full text content, if scraped.
-*   `raw_data_json` (JSONB): Stores original or additional data from the source as a JSON object.
-*   `tags_keywords` (TEXT[]): An array of relevant tags or keywords associated with the item.
-*   `created_at` (TIMESTAMPTZ, default NOW()): Timestamp of when the record was inserted into the database.
+Production lives in a separate repository and deploys to its own GitHub Pages site. This mirror was
+created from production's `main` branch.
 
-**Standardized Breach Fields:**
-*   `affected_individuals` (INTEGER): Number of people affected by the breach.
-*   `breach_date` (TEXT): When the incident occurred (flexible text field for various date formats).
-*   `reported_date` (DATE): When the breach was reported to authorities.
-*   `notice_document_url` (TEXT): Link to official breach notification document.
-*   `what_was_leaked` (TEXT): Description of what information was compromised.
+Differences that are intentional and should not be copied back:
 
-**SEC-Specific Fields:**
-*   `cik` (TEXT): Central Index Key (company identifier).
-*   `ticker_symbol` (TEXT): Stock ticker symbol.
-*   `accession_number` (TEXT): Unique EDGAR filing ID.
-*   `form_type` (TEXT): Filing type (8-K, 8-K/A, 10-K, 10-Q, etc.).
-*   `filing_date` (DATE): When filed with SEC.
-*   `is_cybersecurity_related` (BOOLEAN): Flag for cybersecurity-related filings.
-*   `items_disclosed` (TEXT[]): 8-K items disclosed (1.05, 8.01, etc.).
+- Scheduled workflows are disabled here.
+- No Actions secrets are configured, so scrapers and deploys are inert until you add them.
 
-**Advanced Analysis Fields:**
-*   `data_types_compromised` (TEXT[]): Types of data affected (PII, PHI, financial, etc.).
-*   `keywords_detected` (TEXT[]): Specific cybersecurity keywords found.
-*   `keyword_contexts` (JSONB): Context around detected keywords.
-*   `incident_discovery_date` (DATE): When the incident was discovered.
-*   `estimated_cost_min/max` (DECIMAL): Financial impact estimates.
-*   `industry_classification` (TEXT): Industry/sector classification.
+Two cautions when testing:
 
-**Total Fields:** 44+ fields optimized for comprehensive breach data analysis across multiple source types.
+1. **Database.** The scrapers point at whatever `SUPABASE_URL` you give them. If you supply the
+   production project's credentials, this repository will write to production data. Use a separate
+   Supabase project for testing.
+2. **Source sites.** The scrapers hit live government portals. Re-enabling the 30-minute schedules
+   here means those sites get scraped twice as often in total, from two repositories at once.
 
----
+## Known issues
 
-This README provides a comprehensive guide to understanding, setting up, and using the Comprehensive Breach Data Aggregator project.
+Carried over from production and not yet fixed:
+
+- The California AG scraper enriches every record (listing fetch, detail page, PDF parse) before
+  checking whether the record already exists, so an hourly run cannot finish within the hour.
+- Several scrapers hardcode 2025 URLs or filter dates and cannot see current-year breaches.
+- Dashboard aggregates are computed in the browser over a capped row fetch, so totals are both
+  inaccurate and expensive in egress.
+- Search text is interpolated directly into a PostgREST filter, so a comma or parenthesis in a
+  query returns an error instead of results.

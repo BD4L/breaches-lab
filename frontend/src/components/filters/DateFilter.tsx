@@ -90,7 +90,7 @@ export function DateFilter({ onDateFilterChange, currentView }: DateFilterProps)
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            📅 Date Filters
+             Date Filters
           </h3>
           {(scrapedDateRange || breachDateRange || publicationDateRange) && (
             <Button variant="ghost" size="sm" onClick={clearFilters}>
@@ -102,7 +102,7 @@ export function DateFilter({ onDateFilterChange, currentView }: DateFilterProps)
         {/* Scraped Date Filter */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            🕐 When Scraped (Data Collection Date)
+             When Scraped (Data Collection Date)
           </label>
           <div className="flex flex-wrap gap-2">
             {scrapedPresets.map(preset => (
@@ -130,7 +130,7 @@ export function DateFilter({ onDateFilterChange, currentView }: DateFilterProps)
         {currentView === 'breaches' && (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              ⚠️ Breach Occurrence Date
+               Breach Occurrence Date
             </label>
             <div className="flex flex-wrap gap-2">
               {eventPresets.map(preset => (
@@ -158,7 +158,7 @@ export function DateFilter({ onDateFilterChange, currentView }: DateFilterProps)
         {/* Publication Date Filter */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            📰 Publication/Disclosure Date
+             Publication/Disclosure Date
           </label>
           <div className="flex flex-wrap gap-2">
             {eventPresets.map(preset => (
@@ -257,17 +257,17 @@ export function DateFilter({ onDateFilterChange, currentView }: DateFilterProps)
             <div className="flex flex-wrap gap-2">
               {scrapedDateRange && (
                 <Badge variant="outline" className="text-xs">
-                  🕐 Scraped: {scrapedPresets.find(p => p.value === scrapedDateRange)?.label || scrapedDateRange}
+                   Scraped: {scrapedPresets.find(p => p.value === scrapedDateRange)?.label || scrapedDateRange}
                 </Badge>
               )}
               {breachDateRange && (
                 <Badge variant="outline" className="text-xs">
-                  ⚠️ Breach: {eventPresets.find(p => p.value === breachDateRange)?.label || breachDateRange}
+                   Breach: {eventPresets.find(p => p.value === breachDateRange)?.label || breachDateRange}
                 </Badge>
               )}
               {publicationDateRange && (
                 <Badge variant="outline" className="text-xs">
-                  📰 Published: {eventPresets.find(p => p.value === publicationDateRange)?.label || publicationDateRange}
+                   Published: {eventPresets.find(p => p.value === publicationDateRange)?.label || publicationDateRange}
                 </Badge>
               )}
             </div>

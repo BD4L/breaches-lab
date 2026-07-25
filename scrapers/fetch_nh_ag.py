@@ -462,7 +462,7 @@ def download_pdf_via_firecrawl(pdf_url: str, org_name: str) -> dict:
     }
 
     try:
-        logger.info(f"🔥 Using Firebase to access PDF for {org_name}: {pdf_url}")
+        logger.info(f"Using Firebase to access PDF for {org_name}: {pdf_url}")
 
         # Use Firebase to scrape the PDF content directly
         # This works because Firebase can bypass the WAF protection
@@ -491,11 +491,11 @@ def download_pdf_via_firecrawl(pdf_url: str, org_name: str) -> dict:
                 analysis_result['what_was_leaked'] = extract_what_was_leaked_from_pdf(pdf_text)
                 analysis_result['processing_notes'].append("Full PDF analysis completed via Firebase")
 
-            logger.info(f"✅ Successfully processed PDF via Firebase for {org_name}")
+            logger.info(f"Successfully processed PDF via Firebase for {org_name}")
 
         else:
             analysis_result['processing_notes'].append("Firebase PDF access failed")
-            logger.error(f"❌ Firebase PDF access failed for {org_name}")
+            logger.error(f"Firebase PDF access failed for {org_name}")
 
     except Exception as e:
         logger.error(f"Firebase PDF processing error for {org_name}: {e}")
@@ -516,7 +516,7 @@ def discover_pdfs_via_firecrawl() -> list:
     pdf_urls = []
 
     try:
-        logger.info("🔥 Using Firebase to discover PDFs from NH AG portal...")
+        logger.info("Using Firebase to discover PDFs from NH AG portal...")
 
         # Import Firebase here to avoid dependency issues if not available
         try:
@@ -554,7 +554,7 @@ def discover_pdfs_via_firecrawl() -> list:
                     if 'remote-docs' in pdf_url or 'inline-documents' in pdf_url:
                         pdf_urls.append(pdf_url)
 
-            logger.info(f"🎯 Found {len(pdf_urls)} PDF URLs via Firebase")
+            logger.info(f"Found {len(pdf_urls)} PDF URLs via Firebase")
 
         else:
             logger.warning("Firebase scraping failed, using fallback")
@@ -570,7 +570,7 @@ def discover_pdfs_fallback() -> list:
     """
     Fallback PDF discovery using known recent patterns.
     """
-    logger.info("📋 Using fallback PDF discovery with known recent patterns")
+    logger.info("Using fallback PDF discovery with known recent patterns")
 
     # Known recent examples from our Firebase analysis
     known_slugs = [
@@ -591,7 +591,7 @@ def discover_pdfs_fallback() -> list:
         pdf_url = f"{NH_REMOTE_DOCS_BASE}{slug}.pdf"
         pdf_urls.append(pdf_url)
 
-    logger.info(f"📋 Generated {len(pdf_urls)} fallback PDF URLs")
+    logger.info(f"Generated {len(pdf_urls)} fallback PDF URLs")
     return pdf_urls
 
 def discover_pdfs_via_search(query_type="remote-docs") -> list:
@@ -606,7 +606,7 @@ def discover_pdfs_via_search(query_type="remote-docs") -> list:
     else:  # inline-documents
         search_query = "site:doj.nh.gov inline-documents/sonh data breach filetype:pdf"
 
-    logger.info(f"🔍 Discovering PDFs via search: {search_query}")
+    logger.info(f"Discovering PDFs via search: {search_query}")
 
     # Try SerpAPI if available
     if SERPAPI_KEY:
@@ -629,7 +629,7 @@ def discover_pdfs_via_search(query_type="remote-docs") -> list:
                 if link.endswith(".pdf") and ("remote-docs" in link or "inline-documents" in link):
                     pdf_urls.append(link)
 
-            logger.info(f"🎯 Found {len(pdf_urls)} PDFs via SerpAPI")
+            logger.info(f"Found {len(pdf_urls)} PDFs via SerpAPI")
 
         except Exception as e:
             logger.warning(f"SerpAPI search failed: {e}")
@@ -703,7 +703,7 @@ def test_pdf_accessibility(pdf_url: str) -> dict:
                         result["size_bytes"] = len(chunk)  # Partial size
                         result["accessible"] = True
 
-        logger.debug(f"PDF test: {pdf_url} - {'✅' if result['accessible'] else '❌'} (status: {response.status_code})")
+        logger.debug(f"PDF test: {pdf_url} - {''if result['accessible'] else''} (status: {response.status_code})")
 
     except Exception as e:
         logger.debug(f"PDF test failed for {pdf_url}: {e}")
@@ -781,7 +781,7 @@ def establish_session_warmup():
 
             response = session.get(url, headers=nav_headers, timeout=30)
             response.raise_for_status()
-            logger.info(f"✅ Warmup step {i+1} successful")
+            logger.info(f"Warmup step {i+1} successful")
 
             # Smart delay between warmup requests
             smart_delay(random.uniform(1.5, 4.0))
@@ -840,14 +840,14 @@ def scrape_breach_list_page(page_url: str, page_num: int = 1) -> list:
             response = session.get(page_url, headers=request_headers, timeout=45)
             response.raise_for_status()
 
-            logger.info(f"✅ Successfully fetched page {page_num} (attempt {attempt + 1})")
+            logger.info(f"Successfully fetched page {page_num} (attempt {attempt + 1})")
             break
 
         except requests.exceptions.HTTPError as e:
             status_code = getattr(response, 'status_code', None)
 
             if status_code in [403, 429] and attempt < max_retries - 1:
-                logger.warning(f"🚫 {status_code} error on attempt {attempt + 1}, implementing advanced retry strategy...")
+                logger.warning(f"{status_code} error on attempt {attempt + 1}, implementing advanced retry strategy...")
 
                 # Advanced retry strategy for WAF blocks
                 if status_code == 403:
@@ -869,15 +869,15 @@ def scrape_breach_list_page(page_url: str, page_num: int = 1) -> list:
 
                 continue
             else:
-                logger.error(f"❌ HTTP error fetching page {page_num}: {e}")
+                logger.error(f"HTTP error fetching page {page_num}: {e}")
                 return []
 
         except requests.exceptions.RequestException as e:
             if attempt < max_retries - 1:
-                logger.warning(f"⚠️ Request error on attempt {attempt + 1}, retrying: {e}")
+                logger.warning(f"Request error on attempt {attempt + 1}, retrying: {e}")
                 continue
             else:
-                logger.error(f"❌ Error fetching page {page_num} after {max_retries} attempts: {e}")
+                logger.error(f"Error fetching page {page_num} after {max_retries} attempts: {e}")
                 return []
 
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -968,8 +968,8 @@ def process_new_hampshire_ag_breaches():
     Uses direct PDF access to bypass WAF protection (99% success rate).
     Implements 3-tier data structure with comprehensive PDF analysis.
     """
-    logger.info(f"🚀 Starting New Hampshire AG Security Breach Notification processing in {PROCESSING_MODE} mode...")
-    logger.info("🔓 Using direct PDF access method to bypass WAF protection")
+    logger.info(f"Starting New Hampshire AG Security Breach Notification processing in {PROCESSING_MODE} mode...")
+    logger.info("Using direct PDF access method to bypass WAF protection")
 
     # Initialize Supabase client
     try:
@@ -988,19 +988,19 @@ def process_new_hampshire_ag_breaches():
     # STEP 1: Discover PDFs via direct access (bypass WAF)
     # ================================================================
 
-    logger.info("🔍 Discovering NH AG breach PDFs via multiple methods...")
+    logger.info("Discovering NH AG breach PDFs via multiple methods...")
 
     # Try Firebase discovery first (most reliable)
     pdf_urls = discover_pdfs_via_firecrawl()
 
     # If Firebase fails, try search-based discovery
     if not pdf_urls:
-        logger.info("🔍 Firebase discovery failed, trying search-based discovery...")
+        logger.info("Firebase discovery failed, trying search-based discovery...")
         pdf_urls = discover_pdfs_via_search("remote-docs")
 
     # Test accessibility and filter working URLs
     accessible_pdfs = []
-    logger.info(f"📋 Testing accessibility of {len(pdf_urls)} discovered PDFs...")
+    logger.info(f"Testing accessibility of {len(pdf_urls)} discovered PDFs...")
 
     for pdf_url in pdf_urls:
         # Add jittered delay between tests
@@ -1009,11 +1009,11 @@ def process_new_hampshire_ag_breaches():
         pdf_test = test_pdf_accessibility(pdf_url)
         if pdf_test["accessible"]:
             accessible_pdfs.append(pdf_test)
-            logger.info(f"✅ Accessible: {pdf_test['slug']} ({pdf_test['size_bytes']} bytes)")
+            logger.info(f"Accessible: {pdf_test['slug']} ({pdf_test['size_bytes']} bytes)")
         else:
-            logger.debug(f"❌ Not accessible: {pdf_url}")
+            logger.debug(f"Not accessible: {pdf_url}")
 
-    logger.info(f"🎯 Found {len(accessible_pdfs)} accessible PDFs")
+    logger.info(f"Found {len(accessible_pdfs)} accessible PDFs")
 
     # ================================================================
     # STEP 2: Extract breach information from PDF slugs
@@ -1031,9 +1031,9 @@ def process_new_hampshire_ag_breaches():
             })
             all_breaches.append(breach_info)
         else:
-            logger.warning(f"⚠️ Could not extract breach info from slug: {slug}")
+            logger.warning(f"Could not extract breach info from slug: {slug}")
 
-    logger.info(f"📊 Extracted breach information for {len(all_breaches)} PDFs")
+    logger.info(f"Extracted breach information for {len(all_breaches)} PDFs")
 
     # Process each breach
     for breach in all_breaches:
@@ -1134,10 +1134,10 @@ def process_new_hampshire_ag_breaches():
             # Insert into database
             insert_response = supabase_client.insert_item(**item_data)
             if insert_response:
-                logger.info(f"✅ Successfully inserted: {org_name} (NH residents: {affected_individuals or 'Unknown'})")
+                logger.info(f"Successfully inserted: {org_name} (NH residents: {affected_individuals or'Unknown'})")
                 total_inserted += 1
             else:
-                logger.error(f"❌ Failed to insert: {org_name}")
+                logger.error(f"Failed to insert: {org_name}")
                 total_skipped += 1
 
         except Exception as e:
@@ -1148,12 +1148,12 @@ def process_new_hampshire_ag_breaches():
     logger.info("="*60)
     logger.info("NEW HAMPSHIRE AG PROCESSING COMPLETE")
     logger.info("="*60)
-    logger.info(f"📊 Total breaches processed: {total_processed}")
-    logger.info(f"✅ Successfully inserted: {total_inserted}")
-    logger.info(f"⏭️  Filtered by date: {total_filtered}")
-    logger.info(f"❌ Skipped (errors): {total_skipped}")
-    logger.info(f"🔧 Processing mode: {PROCESSING_MODE}")
-    logger.info(f"📅 Date filter: 2025+ {f'(from {FILTER_FROM_DATE})' if FILTER_FROM_DATE else ''}")
+    logger.info(f"Total breaches processed: {total_processed}")
+    logger.info(f"Successfully inserted: {total_inserted}")
+    logger.info(f"Filtered by date: {total_filtered}")
+    logger.info(f"Skipped (errors): {total_skipped}")
+    logger.info(f"Processing mode: {PROCESSING_MODE}")
+    logger.info(f"Date filter: 2025+ {f'(from {FILTER_FROM_DATE})'if FILTER_FROM_DATE else''}")
     logger.info("="*60)
 
 if __name__ == "__main__":

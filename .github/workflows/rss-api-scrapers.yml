@@ -32,7 +32,7 @@ jobs:
   # ============================================================================
 
   pre-scraping-snapshot:
-    name: "📸 Pre-Scraping Database Snapshot (RSS/API)"
+    name: "Pre-Scraping Database Snapshot (RSS/API)"
     runs-on: ubuntu-latest
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -63,7 +63,7 @@ jobs:
   # ============================================================================
 
   rss-api-scrapers:
-    name: "📰 RSS & API Scrapers"
+    name: "RSS & API Scrapers"
     runs-on: ubuntu-latest
     needs: pre-scraping-snapshot
     continue-on-error: true # Don't fail if RSS/API scrapers have issues
@@ -95,8 +95,8 @@ jobs:
       - name: Run BreachSense Scraper
         if: ${{ github.event.inputs.run_breachsense != 'false' }}
         run: |
-          echo "🔍 Running BreachSense scraper..."
-          python scrapers/fetch_breachsense.py || echo "⚠️ BreachSense scraper failed"
+          echo "Running BreachSense scraper..."
+          python scrapers/fetch_breachsense.py || echo "BreachSense scraper failed"
       
       - name: Wait between scrapers
         run: sleep 10
@@ -104,8 +104,8 @@ jobs:
       - name: Run Cybersecurity News RSS Scraper
         if: ${{ github.event.inputs.run_cybersecurity_news != 'false' }}
         run: |
-          echo "📰 Running Cybersecurity News RSS scraper..."
-          python scrapers/fetch_cybersecurity_news.py || echo "⚠️ Cybersecurity News scraper failed"
+          echo "Running Cybersecurity News RSS scraper..."
+          python scrapers/fetch_cybersecurity_news.py || echo "Cybersecurity News scraper failed"
       
       - name: Wait between scrapers
         run: sleep 10
@@ -113,8 +113,8 @@ jobs:
       - name: Run Company IR Scraper
         if: ${{ github.event.inputs.run_company_ir != 'false' }}
         run: |
-          echo "🏢 Running Company IR scraper..."
-          python scrapers/fetch_company_ir.py || echo "⚠️ Company IR scraper failed"
+          echo "Running Company IR scraper..."
+          python scrapers/fetch_company_ir.py || echo "Company IR scraper failed"
       
       - name: Wait between scrapers
         run: sleep 10
@@ -122,15 +122,15 @@ jobs:
       - name: Run HIBP API Scraper
         if: ${{ github.event.inputs.run_hibp_api != 'false' }}
         run: |
-          echo "🔐 Running HIBP API scraper..."
-          python scrapers/fetch_hibp_api.py || echo "⚠️ HIBP API scraper failed"
+          echo "Running HIBP API scraper..."
+          python scrapers/fetch_hibp_api.py || echo "HIBP API scraper failed"
 
   # ============================================================================
   # SUMMARY JOB - Report on RSS/API scraping results
   # ============================================================================
 
   summary:
-    name: "📊 RSS/API Scraping Summary"
+    name: "RSS/API Scraping Summary"
     runs-on: ubuntu-latest
     needs: [pre-scraping-snapshot, rss-api-scrapers]
     if: always() # Run even if scrapers fail
@@ -169,13 +169,13 @@ jobs:
           echo "================================="
 
           if [[ "${{ needs.rss-api-scrapers.result }}" == "success" ]]; then
-            echo "✅ RSS/API scrapers completed successfully!"
+            echo "RSS/API scrapers completed successfully!"
           else
-            echo "⚠️ RSS/API scrapers had some issues (this is expected and won't affect state portal scrapers)"
+            echo "RSS/API scrapers had some issues (this is expected and won't affect state portal scrapers)"
           fi
 
           echo ""
-          echo "📊 DATABASE CHANGES SUMMARY:"
+          echo "DATABASE CHANGES SUMMARY:"
           echo "   Items Change: ${{ steps.database-report.outputs.new_items }}"
           echo "   Breaches Change: ${{ steps.database-report.outputs.new_breaches }}"
           echo "   News Change: ${{ steps.database-report.outputs.new_news }}"
@@ -185,11 +185,11 @@ jobs:
           NEW_ITEMS="${{ steps.database-report.outputs.new_items }}"
 
           if [ "$NEW_ITEMS" -lt 0 ]; then
-            echo "ℹ️  Note: Negative values indicate database cleanup (duplicate removal)"
+            echo "ℹ Note: Negative values indicate database cleanup (duplicate removal)"
           elif [ "$NEW_ITEMS" -eq 0 ]; then
-            echo "ℹ️  No new items discovered in this RSS/API run"
+            echo "ℹ No new items discovered in this RSS/API run"
           else
-            echo "✅ $NEW_ITEMS new items discovered from RSS/API sources!"
+            echo "$NEW_ITEMS new items discovered from RSS/API sources!"
           fi
 
   # ============================================================================
@@ -197,7 +197,7 @@ jobs:
   # ============================================================================
 
   email-alerts:
-    name: "📧 RSS/API Email Alerts"
+    name: "RSS/API Email Alerts"
     runs-on: ubuntu-latest
     needs: summary
     if: ${{ always() && ((needs.summary.outputs.new_breaches > 0 && needs.summary.outputs.new_breaches != '' && needs.summary.outputs.new_breaches != 'null') || (needs.summary.outputs.new_items > 0 && needs.summary.outputs.new_items != '' && needs.summary.outputs.new_items != 'null')) }}
@@ -222,16 +222,16 @@ jobs:
           pip install requests  # Add requests for Resend API
       - name: Send email alerts
         run: |
-          echo "📧 Processing email alerts for new RSS/API breaches..."
+          echo "Processing email alerts for new RSS/API breaches..."
           python scrapers/email_alerts.py --since-minutes 125
           echo ""
-          echo "✅ RSS/API email alert processing complete"
+          echo "RSS/API email alert processing complete"
       - name: Log alert summary
         run: |
-          echo "🚨 RSS/API BREACH ALERT SUMMARY:"
-          echo "📊 New breaches detected: ${{ needs.summary.outputs.new_breaches }}"
-          echo "📊 Total new items: ${{ needs.summary.outputs.new_items }}"
-          echo "👥 Additional people affected: ${{ needs.summary.outputs.new_affected }}"
+          echo "RSS/API BREACH ALERT SUMMARY:"
+          echo "New breaches detected: ${{ needs.summary.outputs.new_breaches }}"
+          echo "Total new items: ${{ needs.summary.outputs.new_items }}"
+          echo "Additional people affected: ${{ needs.summary.outputs.new_affected }}"
           echo ""
-          echo "🔗 View dashboard: https://bd4l.github.io/Breaches/"
-          echo "📧 Email alerts have been sent to subscribers"
+          echo "View dashboard: https://bd4l.github.io/Breaches/"
+          echo "Email alerts have been sent to subscribers"

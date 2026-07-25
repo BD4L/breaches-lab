@@ -111,12 +111,12 @@ def fetch_feed_with_fallback(feed_url: str, feed_name: str) -> feedparser.FeedPa
 
         # Check if we got entries or if there was an SSL error
         if parsed_feed.entries or not parsed_feed.bozo:
-            logger.debug(f"✅ Successfully fetched {feed_name} with {len(parsed_feed.entries)} entries")
+            logger.debug(f"Successfully fetched {feed_name} with {len(parsed_feed.entries)} entries")
             return parsed_feed
 
         # If bozo bit is set and it's an SSL error, try with requests
         if parsed_feed.bozo and 'SSL' in str(parsed_feed.bozo_exception):
-            logger.info(f"🔄 SSL error for {feed_name}, trying with requests fallback...")
+            logger.info(f"SSL error for {feed_name}, trying with requests fallback...")
 
             # Try with requests and custom headers
             response = requests.get(feed_url, headers=custom_headers, timeout=FEED_TIMEOUT, verify=False)
@@ -124,26 +124,26 @@ def fetch_feed_with_fallback(feed_url: str, feed_name: str) -> feedparser.FeedPa
 
             # Parse the content with feedparser
             parsed_feed = feedparser.parse(response.content)
-            logger.debug(f"✅ Fallback successful for {feed_name} with {len(parsed_feed.entries)} entries")
+            logger.debug(f"Fallback successful for {feed_name} with {len(parsed_feed.entries)} entries")
             return parsed_feed
 
     except requests.exceptions.SSLError:
-        logger.warning(f"🔄 SSL error for {feed_name}, trying without SSL verification...")
+        logger.warning(f"SSL error for {feed_name}, trying without SSL verification...")
         try:
             response = requests.get(feed_url, headers=custom_headers, timeout=FEED_TIMEOUT, verify=False)
             response.raise_for_status()
             parsed_feed = feedparser.parse(response.content)
-            logger.debug(f"✅ No-SSL fallback successful for {feed_name}")
+            logger.debug(f"No-SSL fallback successful for {feed_name}")
             return parsed_feed
         except Exception as e:
-            logger.error(f"❌ Failed to fetch {feed_name} even without SSL verification: {e}")
+            logger.error(f"Failed to fetch {feed_name} even without SSL verification: {e}")
     except requests.exceptions.Timeout:
-        logger.error(f"⏰ Timeout fetching {feed_name} after {FEED_TIMEOUT}s")
+        logger.error(f"Timeout fetching {feed_name} after {FEED_TIMEOUT}s")
     except Exception as e:
-        logger.error(f"❌ Error fetching feed {feed_name}: {e}")
+        logger.error(f"Error fetching feed {feed_name}: {e}")
 
     # Return empty feed on failure
-    logger.warning(f"⚠️  Returning empty feed for {feed_name}")
+    logger.warning(f"Returning empty feed for {feed_name}")
     empty_feed = feedparser.FeedParserDict()
     empty_feed.entries = []
     empty_feed.bozo = False
@@ -177,7 +177,7 @@ def process_single_feed(feed_info: Dict, supabase_client) -> Tuple[str, int, int
         logger.warning(f"Skipping feed entry due to missing name, url, or source_id in config: {feed_info}")
         return feed_name or "Unknown", 0, 0, 1
 
-    logger.info(f"🔄 Processing feed: {feed_name}")
+    logger.info(f"Processing feed: {feed_name}")
 
     try:
         # Use enhanced feed fetching with SSL fallback
@@ -276,7 +276,7 @@ def process_single_feed(feed_info: Dict, supabase_client) -> Tuple[str, int, int
                                 'keywords_detected': breach_intelligence.get('detected_keywords'),
                                 'keyword_contexts': breach_intelligence.get('raw_intelligence', {}).get('keywords_context', {})
                             }
-                            logger.info(f"🚨 BREACH DETECTED in {feed_name}: {breach_intelligence.get('organization_name', 'Unknown')} - Confidence: {breach_intelligence.get('confidence_score', 0):.2f}")
+                            logger.info(f"BREACH DETECTED in {feed_name}: {breach_intelligence.get('organization_name','Unknown')} - Confidence: {breach_intelligence.get('confidence_score', 0):.2f}")
                         else:
                             # Still mark as cybersecurity related even if not a breach
                             breach_data['is_cybersecurity_related'] = breach_intelligence.get('is_breach_related', False)
@@ -329,11 +329,11 @@ def process_single_feed(feed_info: Dict, supabase_client) -> Tuple[str, int, int
                 logger.error(f"Error processing entry '{entry.get('title', 'Unknown Title')}' from {feed_name}: {e}")
                 feed_skipped_count += 1
 
-        logger.info(f"✅ Finished {feed_name}: Processed: {feed_processed_count}, Inserted: {feed_inserted_count}, Skipped: {feed_skipped_count}")
+        logger.info(f"Finished {feed_name}: Processed: {feed_processed_count}, Inserted: {feed_inserted_count}, Skipped: {feed_skipped_count}")
         return feed_name, feed_processed_count, feed_inserted_count, feed_skipped_count
 
     except Exception as e:
-        logger.error(f"❌ Error processing feed {feed_name}: {e}")
+        logger.error(f"Error processing feed {feed_name}: {e}")
         return feed_name, 0, 0, 1
 
 def process_cybersecurity_news_feeds():
@@ -342,8 +342,8 @@ def process_cybersecurity_news_feeds():
     and inserts relevant data into Supabase with enhanced error handling and concurrent processing.
     """
     start_time = datetime.now()
-    logger.info("🚀 Starting Enhanced Cybersecurity News Feed processing...")
-    logger.info(f"📊 Configuration: {FILTER_DAYS_BACK} days filter, {MAX_ITEMS_PER_FEED} items/feed, {CONCURRENT_FEEDS} concurrent feeds, Mode: {PROCESSING_MODE}")
+    logger.info("Starting Enhanced Cybersecurity News Feed processing...")
+    logger.info(f"Configuration: {FILTER_DAYS_BACK} days filter, {MAX_ITEMS_PER_FEED} items/feed, {CONCURRENT_FEEDS} concurrent feeds, Mode: {PROCESSING_MODE}")
 
     try:
         with open(CONFIG_FILE_PATH, 'r') as f:
@@ -362,7 +362,7 @@ def process_cybersecurity_news_feeds():
         logger.error(f"An unexpected error occurred while loading configuration: {e_conf}")
         return
 
-    logger.info(f"📡 Found {len(NEWS_FEEDS)} RSS feeds to process")
+    logger.info(f"Found {len(NEWS_FEEDS)} RSS feeds to process")
 
     supabase_client = None
     try:
@@ -402,10 +402,10 @@ def process_cybersecurity_news_feeds():
                     failed_feeds += 1
 
             except concurrent.futures.TimeoutError:
-                logger.error(f"⏰ Timeout processing feed: {feed_info.get('name', 'Unknown')}")
+                logger.error(f"Timeout processing feed: {feed_info.get('name','Unknown')}")
                 failed_feeds += 1
             except Exception as e:
-                logger.error(f"❌ Exception processing feed {feed_info.get('name', 'Unknown')}: {e}")
+                logger.error(f"Exception processing feed {feed_info.get('name','Unknown')}: {e}")
                 failed_feeds += 1
 
     # Calculate processing time
@@ -414,32 +414,32 @@ def process_cybersecurity_news_feeds():
 
     # Enhanced summary with performance metrics
     logger.info("=" * 80)
-    logger.info("🎯 RSS FEED PROCESSING SUMMARY")
+    logger.info("RSS FEED PROCESSING SUMMARY")
     logger.info("=" * 80)
-    logger.info(f"📊 Total Feeds: {len(NEWS_FEEDS)}")
-    logger.info(f"✅ Successful: {successful_feeds}")
-    logger.info(f"❌ Failed: {failed_feeds}")
-    logger.info(f"📰 Total Items Processed: {total_processed_all_feeds}")
-    logger.info(f"💾 Total Items Inserted: {total_inserted_all_feeds}")
-    logger.info(f"⏭️  Total Items Skipped: {total_skipped_all_feeds}")
-    logger.info(f"⏱️  Processing Time: {processing_time:.2f} seconds")
-    logger.info(f"🚀 Average Speed: {total_processed_all_feeds/processing_time:.1f} items/second" if processing_time > 0 else "🚀 Average Speed: N/A")
+    logger.info(f"Total Feeds: {len(NEWS_FEEDS)}")
+    logger.info(f"Successful: {successful_feeds}")
+    logger.info(f"Failed: {failed_feeds}")
+    logger.info(f"Total Items Processed: {total_processed_all_feeds}")
+    logger.info(f"Total Items Inserted: {total_inserted_all_feeds}")
+    logger.info(f"Total Items Skipped: {total_skipped_all_feeds}")
+    logger.info(f"Processing Time: {processing_time:.2f} seconds")
+    logger.info(f"Average Speed: {total_processed_all_feeds/processing_time:.1f} items/second"if processing_time > 0 else"Average Speed: N/A")
 
     # Breach detection summary
     if BREACH_INTELLIGENCE_ENABLED:
-        logger.info(f"🔍 Breach Intelligence: ENABLED (threshold: {BREACH_CONFIDENCE_THRESHOLD})")
+        logger.info(f"Breach Intelligence: ENABLED (threshold: {BREACH_CONFIDENCE_THRESHOLD})")
     else:
-        logger.info(f"🔍 Breach Intelligence: DISABLED")
+        logger.info(f"Breach Intelligence: DISABLED")
 
     logger.info("=" * 80)
 
     # Performance recommendations
     if processing_time > 300:  # 5 minutes
-        logger.warning(f"⚠️  Processing took {processing_time:.1f}s. Consider reducing MAX_ITEMS_PER_FEED or FILTER_DAYS_BACK")
+        logger.warning(f"Processing took {processing_time:.1f}s. Consider reducing MAX_ITEMS_PER_FEED or FILTER_DAYS_BACK")
     elif total_inserted_all_feeds == 0:
-        logger.warning("⚠️  No new items inserted. Check if feeds are working or date filters are too restrictive")
+        logger.warning("No new items inserted. Check if feeds are working or date filters are too restrictive")
     else:
-        logger.info(f"🎉 Processing completed successfully! {total_inserted_all_feeds} new items added to database")
+        logger.info(f"Processing completed successfully! {total_inserted_all_feeds} new items added to database")
 
 if __name__ == "__main__":
     logger.info("Cybersecurity News RSS Feed Scraper Started")

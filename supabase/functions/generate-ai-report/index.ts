@@ -57,12 +57,12 @@ const corsHeaders = {
 async function conductComprehensiveResearch(breach, geminiApiKey) {
   const organization = breach.organization_name;
   const startTime = Date.now();
-  console.log(`🔍 Starting research for ${organization}`);
+  console.log(`Starting research for ${organization}`);
 
   try {
     // ----- Use Kimi-K2 if available (preferred) -----
     if (OPENROUTER_KEY) {
-      console.log('🤖 Using Kimi-K2 for comprehensive research');
+      console.log('Using Kimi-K2 for comprehensive research');
       const kimiText = await runWithKimi([
         {
           role: 'system',
@@ -100,7 +100,7 @@ async function conductComprehensiveResearch(breach, geminiApiKey) {
     }
 
     // ----- Fallback to basic Gemini without complex templates -----
-    console.log('🤖 Using Gemini as fallback (no OpenRouter key)');
+    console.log('Using Gemini as fallback (no OpenRouter key)');
     const genAI = new GoogleGenerativeAI(geminiApiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
@@ -123,7 +123,7 @@ async function conductComprehensiveResearch(breach, geminiApiKey) {
       sources_count: 0
     };
   } catch (error) {
-    console.error('❌ Research failed:', error);
+    console.error('Research failed:', error);
     throw new Error(`Research failed: ${error.message}`);
   }
 }
@@ -136,7 +136,7 @@ serve(async (req)=>{
     });
   }
   try {
-    console.log('🚀 AI Research Agent initiated - Kimi-K2 preferred, Gemini fallback');
+    console.log('AI Research Agent initiated - Kimi-K2 preferred, Gemini fallback');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     if (!supabaseUrl || !supabaseServiceKey) {
@@ -176,11 +176,11 @@ serve(async (req)=>{
         headers: corsHeaders
       });
     }
-    console.log(`🔍 Starting comprehensive research for: ${breach.organization_name}`);
+    console.log(`Starting comprehensive research for: ${breach.organization_name}`);
     // Check for existing completed report
     const { data: existingReport } = await supabase.from('research_jobs').select('id, status, markdown_content, processing_time_ms, search_results_count').eq('scraped_item', breachId).eq('report_type', 'ai_breach_analysis').eq('status', 'completed').maybeSingle();
     if (existingReport?.markdown_content) {
-      console.log(`📋 Returning cached report for breach ${breachId}`);
+      console.log(`Returning cached report for breach ${breachId}`);
       return new Response(JSON.stringify({
         reportId: existingReport.id,
         status: 'completed',
@@ -203,7 +203,7 @@ serve(async (req)=>{
       created_at: new Date().toISOString()
     }).select().single();
     if (reportError) {
-      console.error('❌ Failed to create report record:', reportError);
+      console.error('Failed to create report record:', reportError);
       return new Response(JSON.stringify({
         error: 'Failed to create report record'
       }), {
@@ -211,17 +211,17 @@ serve(async (req)=>{
         headers: corsHeaders
       });
     }
-    console.log(`📊 Created report record ${reportRecord.id}`);
+    console.log(`Created report record ${reportRecord.id}`);
     try {
       // Conduct research - Kimi-K2 handles everything, Gemini is basic fallback
-      console.log('🔍 Starting AI research...');
+      console.log('Starting AI research...');
       const researchData = await conductComprehensiveResearch(breach, geminiApiKey);
 
       // Use the research report directly - Kimi-K2 is comprehensive, Gemini is simple
       const intelligenceReport = researchData.research_report;
       // Get sources from research
       const allSources = researchData.searched_sources || [];
-      console.log(`📚 Total sources captured: ${allSources.length}`);
+      console.log(`Total sources captured: ${allSources.length}`);
       const endTime = Date.now();
       const processingTimeMs = endTime - startTime;
 
@@ -242,7 +242,7 @@ serve(async (req)=>{
           total_sources_found: allSources.length
         }
       }).eq('id', reportRecord.id);
-      console.log(`✅ AI research completed: ${processingTimeMs}ms`);
+      console.log(`AI research completed: ${processingTimeMs}ms`);
       return new Response(JSON.stringify({
         reportId: reportRecord.id,
         status: 'completed',
@@ -256,7 +256,7 @@ serve(async (req)=>{
         headers: corsHeaders
       });
     } catch (processingError) {
-      console.error('❌ Research processing failed:', processingError);
+      console.error('Research processing failed:', processingError);
       await supabase.from('research_jobs').update({
         status: 'failed',
         error_message: processingError.message,
@@ -271,7 +271,7 @@ serve(async (req)=>{
       });
     }
   } catch (error) {
-    console.error('❌ System error:', error);
+    console.error('System error:', error);
     return new Response(JSON.stringify({
       error: error.message || 'Unknown error occurred'
     }), {

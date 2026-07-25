@@ -9,7 +9,7 @@ This document provides a systematic analysis of all breach portal sites in our d
 
 ---
 
-## 🎯 Analysis Methodology
+## Analysis Methodology
 
 ### Tools Used
 - **Firecrawl**: For comprehensive site structure analysis and content extraction
@@ -25,151 +25,151 @@ This document provides a systematic analysis of all breach portal sites in our d
 6. **Scraping Difficulty**: Rate limiting, anti-bot measures, authentication needs
 
 ### Priority Classification
-- 🟢 **HIGH PRIORITY**: Major state AGs, federal sources, high-volume portals
-- 🟡 **MEDIUM PRIORITY**: Smaller state portals with good data structure
-- 🔴 **LOW PRIORITY**: Limited data, infrequent updates, or technical barriers
+- **HIGH PRIORITY**: Major state AGs, federal sources, high-volume portals
+- **MEDIUM PRIORITY**: Smaller state portals with good data structure
+- **LOW PRIORITY**: Limited data, infrequent updates, or technical barriers
 
 ---
 
-## 📊 Site Analysis Results
+## Site Analysis Results
 
-### 🏛️ Federal Government Sources
+### Federal Government Sources
 
 #### 1. SEC EDGAR 8-K Filings
 - **URL**: https://www.sec.gov/edgar/search/
-- **Status**: 🟢 EXCELLENT (Already Implemented)
+- **Status**: EXCELLENT (Already Implemented)
 - **Analysis**: [Detailed analysis to be added]
 
 #### 2. HHS OCR Breach Portal
 - **URL**: https://ocrportal.hhs.gov/ocr/breach/breach_report.jsf
-- **Status**: 🟢 EXCELLENT (Already Implemented)
+- **Status**: EXCELLENT (Already Implemented)
 - **Analysis**: [Detailed analysis to be added]
 
 ---
 
-### 🏛️ State Attorney General Portals
+### State Attorney General Portals
 
 #### 3. Delaware AG
 - **URL**: https://attorneygeneral.delaware.gov/fraud/cpu/securitybreach/
-- **Status**: 🟢 EXCELLENT (Already Implemented)
+- **Status**: EXCELLENT (Already Implemented)
 - **Analysis**: [Detailed analysis to be added]
 
 #### 4. California AG
 - **URL**: https://oag.ca.gov/privacy/databreach/list
-- **Status**: 🟢 EXCELLENT (Already Implemented)
+- **Status**: EXCELLENT (Already Implemented)
 - **Analysis**: [Detailed analysis to be added]
 
 #### 5. Washington AG
 - **URL**: https://www.atg.wa.gov/data-breach-notifications
-- **Status**: 🟡 GOOD (Needs Verification)
-- **Priority**: 🟢 HIGH PRIORITY
+- **Status**: GOOD (Needs Verification)
+- **Priority**: HIGH PRIORITY
 - **Analysis**: [To be analyzed]
 
-#### 6. Hawaii AG ✅ ANALYZED
+#### 6. Hawaii AG ANALYZED
 - **URL**: https://cca.hawaii.gov/ocp/notices/security-breach/
-- **Status**: 🟢 EXCELLENT (Corrected URL)
-- **Priority**: 🟢 HIGH PRIORITY
+- **Status**: EXCELLENT (Corrected URL)
+- **Priority**: HIGH PRIORITY
 - **Analysis**: **EXCELLENT STRUCTURE** - Searchable table with pagination (138 entries), case numbers, breach types, Hawaii resident counts, and PDF notification letters. Much better than expected!
 
 #### 7. Indiana AG
 - **URL**: https://www.in.gov/attorneygeneral/consumer-protection/data-breach-notifications/
-- **Status**: 🟠 BASIC (Needs Investigation)
-- **Priority**: 🟡 MEDIUM PRIORITY
+- **Status**: BASIC (Needs Investigation)
+- **Priority**: MEDIUM PRIORITY
 - **Analysis**: [To be analyzed]
 
 #### 8. Iowa AG
 - **URL**: https://www.iowaattorneygeneral.gov/for-consumers/data-breach-notifications
-- **Status**: 🟠 BASIC (Needs Investigation)
-- **Priority**: 🟡 MEDIUM PRIORITY
+- **Status**: BASIC (Needs Investigation)
+- **Priority**: MEDIUM PRIORITY
 - **Analysis**: [To be analyzed]
 
 #### 9. Maine AG
 - **URL**: https://www.maine.gov/ag/dynld/documents/clg/breach_notifications.html
-- **Status**: 🟠 BASIC (Needs Investigation)
-- **Priority**: 🟡 MEDIUM PRIORITY
+- **Status**: BASIC (Needs Investigation)
+- **Priority**: MEDIUM PRIORITY
 - **Analysis**: [To be analyzed]
 
 #### 10. Maryland AG
 - **URL**: https://www.marylandattorneygeneral.gov/Pages/IdentityTheft/breachnotice.aspx
-- **Status**: 🟠 BASIC (Needs Investigation)
-- **Priority**: 🟡 MEDIUM PRIORITY
+- **Status**: BASIC (Needs Investigation)
+- **Priority**: MEDIUM PRIORITY
 - **Analysis**: [To be analyzed]
 
-#### 11. Massachusetts AG ✅ ANALYZED
+#### 11. Massachusetts AG ANALYZED
 - **URL**: https://www.mass.gov/lists/data-breach-notification-letters-[month]-[year]
-- **Status**: 🟢 EXCELLENT (Monthly PDF Collections)
-- **Priority**: 🟢 HIGH PRIORITY
+- **Status**: EXCELLENT (Monthly PDF Collections)
+- **Priority**: HIGH PRIORITY
 - **Analysis**: **EXCELLENT STRUCTURE** - Monthly organized PDF collections with 100+ breaches per month, case numbers, and comprehensive notification letters. Very systematic and well-organized!
 
 #### 12. Montana AG
 - **URL**: https://dojmt.gov/consumer/databreach/
-- **Status**: 🟠 BASIC (Needs Investigation)
-- **Priority**: 🟡 MEDIUM PRIORITY
+- **Status**: BASIC (Needs Investigation)
+- **Priority**: MEDIUM PRIORITY
 - **Analysis**: [To be analyzed]
 
 #### 13. New Hampshire AG
 - **URL**: https://www.doj.nh.gov/consumer/security-breaches/
-- **Status**: 🟠 BASIC (Needs Investigation)
-- **Priority**: 🟡 MEDIUM PRIORITY
+- **Status**: BASIC (Needs Investigation)
+- **Priority**: MEDIUM PRIORITY
 - **Analysis**: [To be analyzed]
 
 #### 14. New Jersey Cybersecurity
 - **URL**: https://www.cyber.nj.gov/alerts-advisories/data-breach-notifications
-- **Status**: 🟠 BASIC (Needs Investigation)
-- **Priority**: 🟡 MEDIUM PRIORITY
+- **Status**: BASIC (Needs Investigation)
+- **Priority**: MEDIUM PRIORITY
 - **Analysis**: [To be analyzed]
 
 #### 15. North Dakota AG
 - **URL**: https://attorneygeneral.nd.gov/consumer-resources/data-breach-notifications
-- **Status**: 🟠 BASIC (Needs Investigation)
-- **Priority**: 🔴 LOW PRIORITY
+- **Status**: BASIC (Needs Investigation)
+- **Priority**: LOW PRIORITY
 - **Analysis**: [To be analyzed]
 
 #### 16. Oklahoma Cybersecurity
 - **URL**: https://www.ok.gov/cybersecurity/
-- **Status**: 🟠 BASIC (Needs Investigation)
-- **Priority**: 🔴 LOW PRIORITY
+- **Status**: BASIC (Needs Investigation)
+- **Priority**: LOW PRIORITY
 - **Analysis**: [To be analyzed]
 
 #### 17. Vermont AG
 - **URL**: https://ago.vermont.gov/focus/data-broker-privacy/data-breach-notifications/
-- **Status**: 🟠 BASIC (Needs Investigation)
-- **Priority**: 🔴 LOW PRIORITY
+- **Status**: BASIC (Needs Investigation)
+- **Priority**: LOW PRIORITY
 - **Analysis**: [To be analyzed]
 
 #### 18. Wisconsin DATCP
 - **URL**: https://datcp.wi.gov/Pages/Programs_Services/DataBreachNotifications/default.aspx
-- **Status**: 🟡 GOOD (Needs Verification)
-- **Priority**: 🟡 MEDIUM PRIORITY
+- **Status**: GOOD (Needs Verification)
+- **Priority**: MEDIUM PRIORITY
 - **Analysis**: [To be analyzed]
 
-#### 19. Texas AG (NEW) ✅ ANALYZED
+#### 19. Texas AG (NEW) ANALYZED
 - **URL**: https://oag.my.site.com/datasecuritybreachreport/apex/DataSecurityReportsPage
-- **Status**: ⚫ NOT IMPLEMENTED
-- **Priority**: 🟢 HIGH PRIORITY
+- **Status**: NOT IMPLEMENTED
+- **Priority**: HIGH PRIORITY
 - **Analysis**: **EXCELLENT STRUCTURE** - Salesforce-based portal with searchable table, pagination, and detailed breach information including organization names, incident dates, affected individuals, and description fields. Very well organized for scraping.
 
 ---
 
-### 🔍 Specialized Breach Sites
+### Specialized Breach Sites
 
 #### 20. BreachSense
 - **URL**: https://breachsense.com/
-- **Status**: 🟠 BASIC (Needs Verification)
-- **Priority**: 🟡 MEDIUM PRIORITY
+- **Status**: BASIC (Needs Verification)
+- **Priority**: MEDIUM PRIORITY
 - **Analysis**: [To be analyzed]
 
 ---
 
-## 📋 Analysis Queue
+## Analysis Queue
 
-### ✅ COMPLETED ANALYSES
-1. **Texas AG** - ✅ EXCELLENT Salesforce portal structure
-2. **Massachusetts AG** - ✅ EXCELLENT monthly PDF collections (CORRECTED URL)
-3. **Washington AG** - ✅ EXCELLENT table structure with PDF links
-4. **Hawaii AG** - ✅ EXCELLENT searchable table with 138 entries (CORRECTED URL)
-5. **Wisconsin DATCP** - ✅ EXCELLENT current + archive structure
-6. **Indiana AG** - ✅ GOOD (provides annual PDF reports)
+### COMPLETED ANALYSES
+1. **Texas AG** - EXCELLENT Salesforce portal structure
+2. **Massachusetts AG** - EXCELLENT monthly PDF collections (CORRECTED URL)
+3. **Washington AG** - EXCELLENT table structure with PDF links
+4. **Hawaii AG** - EXCELLENT searchable table with 138 entries (CORRECTED URL)
+5. **Wisconsin DATCP** - EXCELLENT current + archive structure
+6. **Indiana AG** - GOOD (provides annual PDF reports)
 
 ### Medium Priority Analysis
 6. **Indiana AG** - Page structure verification
@@ -188,7 +188,7 @@ This document provides a systematic analysis of all breach portal sites in our d
 
 ---
 
-## 📝 Analysis Template
+## Analysis Template
 
 For each site, the following information will be documented:
 
@@ -223,9 +223,9 @@ For each site, the following information will be documented:
 
 ---
 
-## 🔍 DETAILED SITE ANALYSES
+## DETAILED SITE ANALYSES
 
-### 1. Texas AG - Salesforce Portal ✅ EXCELLENT
+### 1. Texas AG - Salesforce Portal EXCELLENT
 **URL**: https://oag.my.site.com/datasecuritybreachreport/apex/DataSecurityReportsPage
 
 #### Site Structure Analysis
@@ -256,7 +256,7 @@ For each site, the following information will be documented:
 
 ---
 
-### 2. Washington AG - Table Structure ✅ EXCELLENT
+### 2. Washington AG - Table Structure EXCELLENT
 **URL**: https://www.atg.wa.gov/data-breach-notifications
 
 #### Site Structure Analysis
@@ -287,7 +287,7 @@ For each site, the following information will be documented:
 
 ---
 
-### 3. Wisconsin DATCP - Current + Archive ✅ EXCELLENT
+### 3. Wisconsin DATCP - Current + Archive EXCELLENT
 **URL**: https://datcp.wi.gov/pages/programs_services/databreaches.aspx
 
 #### Site Structure Analysis
@@ -318,7 +318,7 @@ For each site, the following information will be documented:
 
 ---
 
-### 4. Massachusetts AG - Monthly PDF Collections ✅ EXCELLENT
+### 4. Massachusetts AG - Monthly PDF Collections EXCELLENT
 **URL Pattern**: https://www.mass.gov/lists/data-breach-notification-letters-[month]-[year]
 **Example**: https://www.mass.gov/lists/data-breach-notification-letters-may-2025
 
@@ -351,7 +351,7 @@ For each site, the following information will be documented:
 
 ---
 
-### 5. Indiana AG - Annual PDF Reports ✅ GOOD
+### 5. Indiana AG - Annual PDF Reports GOOD
 **URL**: https://www.in.gov/attorneygeneral/consumer-protection-division/id-theft-prevention/security-breaches/
 
 #### Site Structure Analysis
@@ -382,7 +382,7 @@ For each site, the following information will be documented:
 
 ---
 
-### 6. Hawaii AG - Searchable Table ✅ EXCELLENT
+### 6. Hawaii AG - Searchable Table EXCELLENT
 **URL**: https://cca.hawaii.gov/ocp/notices/security-breach/ (CORRECTED)
 **Finding**: Excellent searchable database with 138 entries
 
@@ -414,9 +414,9 @@ For each site, the following information will be documented:
 
 ---
 
-## 📊 COMPREHENSIVE ANALYSIS SUMMARY
+## COMPREHENSIVE ANALYSIS SUMMARY
 
-### 🏆 TIER 1: EXCELLENT SCRAPING TARGETS
+### TIER 1: EXCELLENT SCRAPING TARGETS
 These sites have well-structured data and are ideal for automated scraping:
 
 1. **Texas AG** - Modern Salesforce portal with searchable table
@@ -428,20 +428,20 @@ These sites have well-structured data and are ideal for automated scraping:
 7. **SEC EDGAR** - Already implemented, comprehensive
 8. **HHS OCR** - Already implemented, CSV endpoint
 
-### 🥈 TIER 2: GOOD SCRAPING TARGETS
+### TIER 2: GOOD SCRAPING TARGETS
 These sites require more complex processing but contain valuable data:
 
 9. **Massachusetts AG** - Monthly PDF collections with 100+ breaches/month
 10. **Indiana AG** - Annual PDF reports with structured data
 
-### 🥉 TIER 3: CHALLENGING TARGETS
+### TIER 3: CHALLENGING TARGETS
 These sites have limited or unstructured data:
 
 *(None identified so far - all analyzed sites have good structure!)*
 
 ---
 
-## 🛠️ TECHNICAL IMPLEMENTATION RECOMMENDATIONS
+## TECHNICAL IMPLEMENTATION RECOMMENDATIONS
 
 ### Immediate Implementation Priority (Next 30 Days)
 1. **Texas AG Portal** - High-value Salesforce scraper
@@ -455,7 +455,7 @@ These sites have limited or unstructured data:
 
 ---
 
-## 🔧 SCRAPING ARCHITECTURE RECOMMENDATIONS
+## SCRAPING ARCHITECTURE RECOMMENDATIONS
 
 ### For Table-Based Sites (Washington, Wisconsin)
 ```python
@@ -495,7 +495,7 @@ These sites have limited or unstructured data:
 
 ---
 
-## 📋 DATABASE SCHEMA RECOMMENDATIONS
+## DATABASE SCHEMA RECOMMENDATIONS
 
 Based on the analysis, the following fields should be standardized across all breach portals:
 
@@ -523,7 +523,7 @@ Based on the analysis, the following fields should be standardized across all br
 
 ---
 
-## 🚀 NEXT STEPS
+## NEXT STEPS
 
 ### Phase 1: High-Value Quick Wins (Week 1-2)
 1. Implement Texas AG Salesforce scraper
@@ -549,7 +549,7 @@ Based on the analysis, the following fields should be standardized across all br
 
 ---
 
-## 📈 EXPECTED DATA VOLUME
+## EXPECTED DATA VOLUME
 
 Based on the analysis, estimated monthly breach notifications:
 
@@ -564,7 +564,7 @@ Based on the analysis, estimated monthly breach notifications:
 
 ---
 
-## ⚠️ IMPORTANT CONSIDERATIONS
+## IMPORTANT CONSIDERATIONS
 
 ### Legal & Compliance
 - All scraped data is public information

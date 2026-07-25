@@ -493,13 +493,13 @@ def process_montana_ag_breaches():
                 try:
                     insert_response = supabase_client.insert_item(**item_data)
                     if insert_response:
-                        logger.info(f"✅ Successfully inserted: {business_name}")
+                        logger.info(f"Successfully inserted: {business_name}")
                         page_inserted_count += 1
                     else:
-                        logger.error(f"❌ Failed to insert: {business_name}")
+                        logger.error(f"Failed to insert: {business_name}")
                         page_skipped_count += 1
                 except Exception as insert_error:
-                    logger.error(f"❌ Database insertion error for {business_name}: {insert_error}")
+                    logger.error(f"Database insertion error for {business_name}: {insert_error}")
                     page_skipped_count += 1
 
             except Exception as e:
@@ -517,8 +517,8 @@ def process_montana_ag_breaches():
             logger.info(f"No data found on page {page_num}, stopping pagination")
             break
 
-    logger.info(f"🎉 Montana AG processing complete!")
-    logger.info(f"📊 Total: {total_processed} processed, {total_inserted} inserted, {total_skipped} skipped")
+    logger.info(f"Montana AG processing complete!")
+    logger.info(f"Total: {total_processed} processed, {total_inserted} inserted, {total_skipped} skipped")
 
 if __name__ == "__main__":
     logger.info("Montana AG Security Breach Scraper Started")

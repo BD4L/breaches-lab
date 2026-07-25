@@ -96,12 +96,12 @@ export function FilterPanel({ onFiltersChange, currentView }: FilterPanelProps) 
 
   const getCategoryIcon = (category: string): string => {
     switch (category) {
-      case 'State AG Sites': return '🏛️'
-      case 'Government Portals': return '🏢'
-      case 'RSS News Feeds': return '📰'
-      case 'Specialized Breach Sites': return '🔍'
-      case 'Company IR Sites': return '💼'
-      default: return '📊'
+      case'State AG Sites': return''
+      case'Government Portals': return''
+      case'RSS News Feeds': return''
+      case'Specialized Breach Sites': return''
+      case'Company IR Sites': return''
+      default: return''
     }
   }
 

@@ -168,13 +168,13 @@ def fix_california_ag_breach_dates():
                         update_response = supabase_client.client.table("scraped_items").update(update_data).eq("id", record_id).execute()
                         if update_response.data:
                             total_fixed += 1
-                            logger.info(f"✅ Fixed record {record_id} ({title}): {', '.join(update_reasons)}")
+                            logger.info(f"Fixed record {record_id} ({title}): {','.join(update_reasons)}")
                             if original_breach_date_text and parsed_breach_dates:
                                 logger.debug(f"   Original: '{original_breach_date_text}' -> Parsed: {parsed_breach_dates}")
                         else:
-                            logger.warning(f"❌ Failed to update record {record_id}")
+                            logger.warning(f"Failed to update record {record_id}")
                     except Exception as e:
-                        logger.error(f"❌ Error updating record {record_id}: {e}")
+                        logger.error(f"Error updating record {record_id}: {e}")
                 
                 # Log progress every 100 records
                 if total_processed % 100 == 0:
@@ -196,7 +196,7 @@ def fix_california_ag_breach_dates():
 if __name__ == "__main__":
     success = fix_california_ag_breach_dates()
     if success:
-        logger.info("✅ California AG breach date fix completed successfully!")
+        logger.info("California AG breach date fix completed successfully!")
     else:
-        logger.error("❌ California AG breach date fix failed!")
+        logger.error("California AG breach date fix failed!")
         sys.exit(1)

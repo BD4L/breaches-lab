@@ -126,21 +126,21 @@ export function ScheduleManager({ onClose }: ScheduleManagerProps) {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              📅 Schedule Manager
+               Schedule Manager
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
               Configure automated scraping schedules and intervals
             </p>
           </div>
           <Button variant="outline" onClick={onClose}>
-            ✕ Close
+             Close
           </Button>
         </div>
 
         {/* Warning Notice */}
         <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
           <div className="flex items-start space-x-2">
-            <span className="text-yellow-600 dark:text-yellow-400">⚠️</span>
+            <span className="text-yellow-600 dark:text-yellow-400"></span>
             <div>
               <h3 className="font-medium text-yellow-800 dark:text-yellow-200">
                 GitHub Actions Integration Required
@@ -167,7 +167,7 @@ export function ScheduleManager({ onClose }: ScheduleManagerProps) {
                     {schedule.name}
                   </h4>
                   <Badge variant={schedule.enabled ? 'default' : 'secondary'}>
-                    {schedule.enabled ? '✅ Active' : '⏸️ Disabled'}
+                    {schedule.enabled ?'Active':'Disabled'}
                   </Badge>
                 </div>
                 <div className="flex space-x-2">
@@ -179,7 +179,7 @@ export function ScheduleManager({ onClose }: ScheduleManagerProps) {
                       setNewCron(schedule.cron)
                     }}
                   >
-                    ✏️ Edit
+                     Edit
                   </Button>
                   <Button
                     variant={schedule.enabled ? 'destructive' : 'default'}
@@ -270,7 +270,7 @@ export function ScheduleManager({ onClose }: ScheduleManagerProps) {
         {/* Cron Help */}
         <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
           <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
-            📖 Cron Expression Format
+             Cron Expression Format
           </h3>
           <div className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
             <div className="font-mono bg-white dark:bg-gray-800 p-2 rounded">

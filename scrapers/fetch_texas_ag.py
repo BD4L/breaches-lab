@@ -386,10 +386,10 @@ def upsert_records(records: list[dict], supabase_client: SupabaseClient) -> tupl
             # Insert into database
             result = supabase_client.insert_item(**item_data)
             if result:
-                logger.info(f"✅ Inserted: {entity_name} ({affected_individuals or 'Unknown'} affected)")
+                logger.info(f"Inserted: {entity_name} ({affected_individuals or'Unknown'} affected)")
                 inserted_count += 1
             else:
-                logger.error(f"❌ Failed to insert: {entity_name}")
+                logger.error(f"Failed to insert: {entity_name}")
                 skipped_count += 1
 
         except Exception as e:

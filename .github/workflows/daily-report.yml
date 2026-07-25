@@ -17,7 +17,7 @@ on:
 
 jobs:
   daily-breach-report:
-    name: "📅 Daily Breach Activity Report"
+    name: "Daily Breach Activity Report"
     runs-on: ubuntu-latest
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -43,22 +43,22 @@ jobs:
       - name: Generate daily activity report
         id: daily-stats
         run: |
-          echo "📅 Generating daily breach activity report..."
+          echo "Generating daily breach activity report..."
           
           # Determine report type
           REPORT_TYPE="${{ github.event.inputs.report_type || 'full' }}"
           
           case $REPORT_TYPE in
             "today")
-              echo "📊 Generating today's activity report..."
+              echo "Generating today's activity report..."
               python scrapers/daily_change_tracker.py --today
               ;;
             "yesterday")
-              echo "📊 Generating yesterday's activity report..."
+              echo "Generating yesterday's activity report..."
               python scrapers/daily_change_tracker.py --yesterday
               ;;
             "full"|*)
-              echo "📊 Generating comprehensive daily report..."
+              echo "Generating comprehensive daily report..."
               python scrapers/daily_change_tracker.py --report
               ;;
           esac
@@ -66,39 +66,39 @@ jobs:
       - name: Generate summary for notifications
         run: |
           echo ""
-          echo "🔔 DAILY SUMMARY FOR NOTIFICATIONS:"
+          echo "DAILY SUMMARY FOR NOTIFICATIONS:"
           echo "=================================="
           
           # Get today's stats for potential alerting
           python scrapers/daily_change_tracker.py --today > /tmp/today_report.txt
           
           # Extract key metrics (this could be enhanced for webhook/email integration)
-          echo "📊 Report generated and ready for integration with:"
+          echo "Report generated and ready for integration with:"
           echo "   • Email notifications"
           echo "   • Slack/Discord webhooks" 
           echo "   • Dashboard updates"
           echo "   • Security team alerts"
           echo ""
-          echo "🔗 View live dashboard: https://hackermanmarlin.github.io/Breaches/"
+          echo "View live dashboard: https://hackermanmarlin.github.io/Breaches/"
 
   # Optional: Send daily digest (can be enabled when notification system is ready)
   daily-digest:
-    name: "📧 Daily Digest Notification"
+    name: "Daily Digest Notification"
     runs-on: ubuntu-latest
     needs: daily-breach-report
     if: ${{ always() && needs.daily-breach-report.outputs.today_new_breaches > 5 }} # Only if significant activity
     steps:
       - name: High activity alert
         run: |
-          echo "🚨 HIGH BREACH ACTIVITY DETECTED!"
+          echo "HIGH BREACH ACTIVITY DETECTED!"
           echo "================================"
-          echo "📊 Today's Activity:"
+          echo "Today's Activity:"
           echo "   • New Items: ${{ needs.daily-breach-report.outputs.today_new_items }}"
           echo "   • New Breaches: ${{ needs.daily-breach-report.outputs.today_new_breaches }}"
           echo "   • New News: ${{ needs.daily-breach-report.outputs.today_new_news }}"
           echo "   • People Affected: ${{ needs.daily-breach-report.outputs.today_new_affected }}"
           echo ""
-          echo "🔗 Dashboard: https://hackermanmarlin.github.io/Breaches/"
+          echo "Dashboard: https://hackermanmarlin.github.io/Breaches/"
           echo ""
           echo "This alert triggers when >5 new breaches are detected in a day."
           echo "Customize the threshold or add email/Slack integration as needed."

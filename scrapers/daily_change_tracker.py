@@ -140,32 +140,32 @@ def get_today_period():
 def format_daily_report(stats: Dict[str, Any], title: str):
     """Format a daily report for display."""
     if not stats:
-        return f"\n❌ {title}: No data available\n"
+        return f"\n {title}: No data available\n"
     
     period_hours = stats.get('period_hours', 0)
     
     report = f"\n{'='*80}\n"
-    report += f"📅 {title}\n"
+    report += f"{title}\n"
     report += f"{'='*80}\n"
-    report += f"⏰ Period: {stats['period_start'][:19]} → {stats['period_end'][:19]} ({period_hours:.1f} hours)\n\n"
+    report += f"Period: {stats['period_start'][:19]} {stats['period_end'][:19]} ({period_hours:.1f} hours)\n\n"
     
     # Overall summary
-    report += f"📊 DAILY SUMMARY:\n"
-    report += f"   📄 Total New Items: {stats['new_items']:,}\n"
-    report += f"   🚨 New Breaches: {stats['new_breaches']:,}\n"
-    report += f"   📰 New News: {stats['new_news']:,}\n"
-    report += f"   👥 People Affected: {stats['new_affected']:,}\n\n"
+    report += f"DAILY SUMMARY:\n"
+    report += f"Total New Items: {stats['new_items']:,}\n"
+    report += f"New Breaches: {stats['new_breaches']:,}\n"
+    report += f"New News: {stats['new_news']:,}\n"
+    report += f"People Affected: {stats['new_affected']:,}\n\n"
     
     # Source type breakdown
     if stats['by_source_type']:
-        report += f"📋 BY CATEGORY:\n"
+        report += f"BY CATEGORY:\n"
         for source_type, count in sorted(stats['by_source_type'].items(), key=lambda x: x[1], reverse=True):
             report += f"   {source_type}: {count:,}\n"
         report += "\n"
     
     # Top sources
     if stats['by_source']:
-        report += f"🔍 TOP SOURCES:\n"
+        report += f"TOP SOURCES:\n"
         top_sources = sorted(stats['by_source'].items(), key=lambda x: x[1], reverse=True)[:10]
         for source, count in top_sources:
             report += f"   {source}: {count:,}\n"
@@ -173,7 +173,7 @@ def format_daily_report(stats: Dict[str, Any], title: str):
     
     # Top affected breaches
     if stats['top_breaches']:
-        report += f"🚨 LARGEST BREACHES:\n"
+        report += f"LARGEST BREACHES:\n"
         for breach in stats['top_breaches']:
             report += f"   {breach['organization']}: {breach['affected']:,} people ({breach['source']})\n"
         report += "\n"
@@ -181,7 +181,7 @@ def format_daily_report(stats: Dict[str, Any], title: str):
     # Performance metrics
     if stats['new_items'] > 0:
         items_per_hour = stats['new_items'] / max(period_hours, 1)
-        report += f"📈 METRICS:\n"
+        report += f"METRICS:\n"
         report += f"   Items per hour: {items_per_hour:.1f}\n"
         if stats['new_affected'] > 0:
             avg_affected = stats['new_affected'] / max(stats['new_breaches'], 1)
@@ -192,13 +192,13 @@ def format_daily_report(stats: Dict[str, Any], title: str):
 
 def show_today():
     """Show today's changes (1am to now)."""
-    logger.info("📊 Generating today's change report...")
+    logger.info("Generating today's change report...")
     
     start_time, end_time = get_today_period()
     stats = get_daily_stats(start_time, end_time)
     
     if not stats:
-        print("❌ Failed to get today's statistics")
+        print("Failed to get today's statistics")
         return False
     
     report = format_daily_report(stats, "TODAY'S BREACH ACTIVITY")
@@ -216,13 +216,13 @@ def show_today():
 
 def show_yesterday():
     """Show yesterday's changes (1am to 1am)."""
-    logger.info("📊 Generating yesterday's change report...")
+    logger.info("Generating yesterday's change report...")
     
     start_time, end_time = get_yesterday_period()
     stats = get_daily_stats(start_time, end_time)
     
     if not stats:
-        print("❌ Failed to get yesterday's statistics")
+        print("Failed to get yesterday's statistics")
         return False
     
     report = format_daily_report(stats, "YESTERDAY'S BREACH ACTIVITY")
@@ -232,7 +232,7 @@ def show_yesterday():
 
 def show_report():
     """Show both today and yesterday reports."""
-    logger.info("📊 Generating comprehensive daily report...")
+    logger.info("Generating comprehensive daily report...")
     
     success = True
     
@@ -251,12 +251,12 @@ def show_report():
     
     if yesterday_stats and today_stats:
         print("\n" + "="*80)
-        print("📈 DAY-OVER-DAY COMPARISON")
+        print("DAY-OVER-DAY COMPARISON")
         print("="*80)
-        print(f"Items: {yesterday_stats['new_items']:,} → {today_stats['new_items']:,} ({today_stats['new_items'] - yesterday_stats['new_items']:+,})")
-        print(f"Breaches: {yesterday_stats['new_breaches']:,} → {today_stats['new_breaches']:,} ({today_stats['new_breaches'] - yesterday_stats['new_breaches']:+,})")
-        print(f"News: {yesterday_stats['new_news']:,} → {today_stats['new_news']:,} ({today_stats['new_news'] - yesterday_stats['new_news']:+,})")
-        print(f"Affected: {yesterday_stats['new_affected']:,} → {today_stats['new_affected']:,} ({today_stats['new_affected'] - yesterday_stats['new_affected']:+,})")
+        print(f"Items: {yesterday_stats['new_items']:,} {today_stats['new_items']:,} ({today_stats['new_items'] - yesterday_stats['new_items']:+,})")
+        print(f"Breaches: {yesterday_stats['new_breaches']:,} {today_stats['new_breaches']:,} ({today_stats['new_breaches'] - yesterday_stats['new_breaches']:+,})")
+        print(f"News: {yesterday_stats['new_news']:,} {today_stats['new_news']:,} ({today_stats['new_news'] - yesterday_stats['new_news']:+,})")
+        print(f"Affected: {yesterday_stats['new_affected']:,} {today_stats['new_affected']:,} ({today_stats['new_affected'] - yesterday_stats['new_affected']:+,})")
         print("="*80)
     
     return success

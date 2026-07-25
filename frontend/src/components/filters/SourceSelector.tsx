@@ -68,12 +68,12 @@ export function SourceSelector({ category, onClose, onSourcesSelected, selectedS
 
   const getCategoryIcon = (category: string): string => {
     switch (category) {
-      case 'State AG Sites': return '🏛️'
-      case 'Government Portals': return '🏢'
-      case 'RSS News Feeds': return '📰'
-      case 'Specialized Breach Sites': return '🔍'
-      case 'Company IR Sites': return '💼'
-      default: return '📊'
+      case'State AG Sites': return''
+      case'Government Portals': return''
+      case'RSS News Feeds': return''
+      case'Specialized Breach Sites': return''
+      case'Company IR Sites': return''
+      default: return''
     }
   }
 
@@ -148,7 +148,7 @@ export function SourceSelector({ category, onClose, onSourcesSelected, selectedS
             </div>
           </div>
           <Button variant="outline" onClick={onClose}>
-            ✕ Close
+             Close
           </Button>
         </div>
 
@@ -199,7 +199,7 @@ export function SourceSelector({ category, onClose, onSourcesSelected, selectedS
                           ? 'border-blue-500 bg-blue-500' 
                           : 'border-gray-300 dark:border-gray-600'
                       }`}>
-                        {isSelected && <span className="text-white text-xs">✓</span>}
+                        {isSelected && <span className="text-white text-xs"></span>}
                       </div>
                       <div>
                         <div className="font-medium text-gray-900 dark:text-white">
@@ -224,7 +224,7 @@ export function SourceSelector({ category, onClose, onSourcesSelected, selectedS
                       </Badge>
                       {isSelected && (
                         <Badge variant="default" className="text-xs bg-green-100 text-green-800">
-                          ✓ Selected
+                           Selected
                         </Badge>
                       )}
                     </div>
