@@ -15,10 +15,16 @@ on:
           - 'QUICK'
           - 'ENHANCED'
       filter_from_date:
-        description: 'Filter breaches from this date (YYYY-MM-DD)'
+        description: 'Backfill from this date (YYYY-MM-DD). Leave blank to use the rolling window.'
         required: false
-        default: '2025-05-21'
+        default: ''
         type: string
+
+# Hourly runs must not stack. Without this, a run that overruns its interval simply overlaps
+# the next one, and multiple copies write the same rows concurrently.
+concurrency:
+  group: california-ag-scraper
+  cancel-in-progress: false
 
 jobs:
   # ============================================================================
@@ -28,6 +34,7 @@ jobs:
   pre-scraping-snapshot:
     name: "Pre-Scraping Database Snapshot"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
@@ -59,16 +66,21 @@ jobs:
   california-ag-scraper:
     name: "California AG Scraper"
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     needs: pre-scraping-snapshot
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
       PYTHONUNBUFFERED: "1"
       # California AG configuration
-      CA_AG_FILTER_FROM_DATE: ${{ github.event.inputs.filter_from_date || '2025-06-01' }}
+      # Left empty on scheduled runs so the scraper uses its rolling lookback window. Supplying
+      # a fixed date here is what made every run reprocess a window that grew without bound.
+      # The workflow_dispatch input is still honoured for one-off backfills.
+      CA_AG_FILTER_FROM_DATE: ${{ github.event.inputs.filter_from_date }}
       CA_AG_PROCESSING_MODE: ${{ github.event.inputs.processing_mode || 'FULL' }}
-      CA_AG_TIMEOUT: "50"  # 50-minute timeout for hourly runs
-      CA_AG_MAX_PAGES: "10"  # Limit pages to prevent excessive runtime
+      # CA_AG_TIMEOUT and CA_AG_MAX_PAGES were removed. No code ever read them, so they
+      # advertised a 50-minute cap and a 10-page limit that did not exist. The real bound is
+      # the job-level timeout-minutes below.
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -83,9 +95,7 @@ jobs:
           echo "Starting California AG scraper at $(date)"
           echo "Configuration:"
           echo "   - Processing Mode: $CA_AG_PROCESSING_MODE"
-          echo "   - Filter From Date: $CA_AG_FILTER_FROM_DATE"
-          echo "   - Timeout: $CA_AG_TIMEOUT minutes"
-          echo "   - Max Pages: $CA_AG_MAX_PAGES"
+          echo "   - Filter From Date: ${CA_AG_FILTER_FROM_DATE:-(rolling window)}"
       - name: Run California AG Scraper
         run: |
           echo "Running California AG scraper..."
@@ -101,6 +111,7 @@ jobs:
   summary:
     name: "California AG Summary & Database Changes"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [pre-scraping-snapshot, california-ag-scraper]
     if: always() # Run even if scraper fails
     env:
@@ -171,6 +182,7 @@ jobs:
   email-notifications:
     name: "Email Alert Notifications"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [summary]
     if: ${{ (needs.summary.outputs.new_breaches > 0 && needs.summary.outputs.new_breaches != '' && needs.summary.outputs.new_breaches != 'null') || (needs.summary.outputs.new_items > 0 && needs.summary.outputs.new_items != '' && needs.summary.outputs.new_items != 'null') }}
     env:

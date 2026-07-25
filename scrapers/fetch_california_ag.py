@@ -28,16 +28,33 @@ logger = logging.getLogger(__name__)
 # Constants
 CALIFORNIA_AG_BREACH_URL = "https://oag.ca.gov/privacy/databreach/list"
 CALIFORNIA_AG_CSV_URL = "https://oag.ca.gov/privacy/databreach/list-export"
+# Marks a link on the listing page as an individual breach report rather than site navigation.
+DETAIL_URL_PATTERN = "/ecrime/databreach/reports/"
 SOURCE_ID_CALIFORNIA_AG = 4 # California AG source ID
 
 # Configuration for date filtering
-# Set to None to collect all historical data (for testing)
-# Set to a date string like "2025-05-27" for production filtering
-# Default to beginning of current month for comprehensive coverage
-# GitHub Actions should use recent date to avoid timeouts
+#
+# The window is relative to today, not a fixed calendar date. It used to default to the literal
+# "2025-06-01", which meant the set of records reprocessed on every run grew without bound: by
+# mid-2026 that was 650+ records per hourly run, which is more work than fits in the interval.
+#
+# Set CA_AG_FILTER_FROM_DATE to an explicit YYYY-MM-DD for a one-off backfill, or CA_AG_LOOKBACK_DAYS
+# to change the rolling window. Set CA_AG_FILTER_FROM_DATE to "none" to collect all history.
 from datetime import timedelta
-default_date = "2025-06-01"
-FILTER_FROM_DATE = os.environ.get("CA_AG_FILTER_FROM_DATE", default_date)
+
+DEFAULT_LOOKBACK_DAYS = 14
+try:
+    LOOKBACK_DAYS = int(os.environ.get("CA_AG_LOOKBACK_DAYS", DEFAULT_LOOKBACK_DAYS))
+except ValueError:
+    LOOKBACK_DAYS = DEFAULT_LOOKBACK_DAYS
+
+_filter_override = os.environ.get("CA_AG_FILTER_FROM_DATE", "").strip()
+if _filter_override.lower() in ("none", "all"):
+    FILTER_FROM_DATE = None
+elif _filter_override:
+    FILTER_FROM_DATE = _filter_override
+else:
+    FILTER_FROM_DATE = (date.today() - timedelta(days=LOOKBACK_DAYS)).isoformat()
 
 # Processing mode configuration
 # BASIC: Only CSV data (fast, reliable for daily collection)
@@ -170,6 +187,115 @@ def fetch_csv_data() -> list:
     except Exception as e:
         logger.error(f"Failed to fetch CSV data: {e}")
         return []
+
+def build_fallback_item_url(breach_record: dict) -> str:
+    """
+    Build a stable, per-record item_url for breaches whose detail page could not be resolved.
+
+    scraped_items.item_url is UNIQUE. The previous fallback used the shared listing URL, so
+    every unresolved breach collided on a single row and all but the first were silently lost.
+    Anchoring on the incident_uid, which is derived from organization name and reported date
+    without any network call, keeps each record distinct and stable across runs.
+    """
+    return f"{CALIFORNIA_AG_BREACH_URL}#{breach_record['incident_uid']}"
+
+
+def is_enhancement_complete(status: dict) -> bool:
+    """
+    Report whether a stored row already has everything enrichment could add.
+
+    This mirrors the update conditions applied after enrichment further down: each one fires
+    when the stored row is missing a field that a fresh enrichment might supply. If none of
+    them could fire, enrichment cannot improve the row and the network work can be skipped.
+
+    Deliberately conservative. Anything missing means we re-enrich, so the failure mode is
+    doing unnecessary work rather than missing an update.
+    """
+    if status.get('has_enhancement_errors'):
+        return False
+    if not status.get('has_pdf_analysis'):
+        return False
+    if not status.get('affected_individuals'):
+        return False
+    if not status.get('notice_document_url'):
+        return False
+
+    raw_data = status.get('raw_data_json') or {}
+    if not isinstance(raw_data, dict):
+        return False
+    if not raw_data.get('what_information_involved_text'):
+        return False
+
+    return True
+
+
+def build_detail_url_map() -> dict:
+    """
+    Fetch the California AG listing page once and map organization name -> detail page URL.
+
+    The CSV export does not carry the real detail URLs (the 'detail_url' built in
+    fetch_csv_data() is derived from a synthetic incident_uid and does not resolve), so the
+    listing page is the only source for them. Fetching it once and reusing the map replaces
+    one full page download and parse per breach record.
+    """
+    logger.info("Building detail URL map from California AG listing page...")
+    url_map = {}
+
+    try:
+        rate_limit_delay()
+        response = requests.get(CALIFORNIA_AG_BREACH_URL, headers=REQUEST_HEADERS, timeout=REQUEST_TIMEOUT)
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        for link in soup.find_all('a', href=True):
+            link_text = link.get_text().strip()
+            if not link_text:
+                continue
+
+            href = urljoin(CALIFORNIA_AG_BREACH_URL, link.get('href'))
+
+            # Only breach report links. The page also carries navigation and skip links, and
+            # the organization lookup falls back to a substring match, so leaving those in the
+            # map lets an organization name match a nav item and point item_url at a page that
+            # is not a breach report.
+            if DETAIL_URL_PATTERN not in href:
+                continue
+
+            # First occurrence wins, matching the original break-on-first-match behaviour.
+            key = link_text.lower()
+            if key not in url_map:
+                url_map[key] = href
+
+        logger.info(f"Detail URL map built with {len(url_map)} entries")
+        return url_map
+
+    except Exception as e:
+        logger.error(f"Failed to build detail URL map: {e}")
+        return {}
+
+
+def resolve_detail_url(organization_name: str, url_map: dict) -> str | None:
+    """
+    Find the detail page URL for an organization within the prebuilt map.
+
+    The original code matched when the organization name appeared anywhere inside the link
+    text, so the substring pass is kept as a fallback after an exact match fails.
+    """
+    if not organization_name or not url_map:
+        return None
+
+    org_lower = organization_name.lower().strip()
+
+    if org_lower in url_map:
+        return url_map[org_lower]
+
+    for link_text, href in url_map.items():
+        if org_lower in link_text:
+            return href
+
+    return None
+
 
 def scrape_detail_page(detail_url: str) -> dict:
     """
@@ -629,11 +755,15 @@ def analyze_pdf_content(pdf_url: str) -> dict:
             'extraction_confidence': 'failed'
         }
 
-def enhance_breach_data(breach_record: dict) -> dict:
+def enhance_breach_data(breach_record: dict, detail_url: str | None = None) -> dict:
     """
     Enhance breach data by fetching detailed information (Tier 2 - Derived/Enriched).
     CRITICAL: Always returns enhanced_data even if enhancement fails.
     This ensures we never lose core breach data due to PDF/detail page failures.
+
+    detail_url is resolved by the caller from the map built once per run. It is optional so
+    that calling this function directly still works; in that case the listing page is fetched
+    to resolve a single URL, which is what the whole run used to do for every record.
     """
     # Start with core data - this is our fallback if everything fails
     enhanced_data = breach_record.copy()
@@ -651,38 +781,19 @@ def enhance_breach_data(breach_record: dict) -> dict:
             }
             return enhanced_data
 
-        # Construct detail page URL from organization name and CSV data
-        # The URLs follow pattern: https://oag.ca.gov/ecrime/databreach/reports/sb24-XXXXXX
-        # We need to find the actual URL by scraping the main page or using the CSV incident UID
-
-        # For now, we'll try to construct the URL based on the incident UID pattern
-        # This would be enhanced to actually scrape the main page for the real URLs
-
-        # Try to find the detail page URL by scraping the main listing
-        detail_url = None
-        try:
-            # Scrape the main page to find the actual detail URL
-            # Add rate limiting delay before main page request
-            rate_limit_delay()
-
-            response = requests.get(CALIFORNIA_AG_BREACH_URL, headers=REQUEST_HEADERS, timeout=REQUEST_TIMEOUT)
-            response.raise_for_status()
-
-            soup = BeautifulSoup(response.content, 'html.parser')
-
-            # Find the table and look for the organization name
-            org_name = enhanced_data['organization_name']
-
-            # Look for links containing the organization name
-            for link in soup.find_all('a', href=True):
-                if org_name.lower() in link.get_text().lower():
-                    detail_url = urljoin(CALIFORNIA_AG_BREACH_URL, link.get('href'))
-                    break
-
-        except Exception as e:
-            error_msg = f"Could not find detail URL for {enhanced_data['organization_name']}: {e}"
-            logger.warning(error_msg)
-            enhanced_data['enhancement_errors'].append(f"Detail URL lookup failed: {str(e)}")
+        # Detail page URLs (https://oag.ca.gov/ecrime/databreach/reports/sb24-XXXXXX) exist only
+        # on the listing page, so they have to be resolved from it. The caller normally passes
+        # one in from the map built once per run; falling back to a single-URL lookup here keeps
+        # this function usable on its own.
+        if not detail_url:
+            try:
+                detail_url = resolve_detail_url(
+                    enhanced_data['organization_name'], build_detail_url_map()
+                )
+            except Exception as e:
+                error_msg = f"Could not find detail URL for {enhanced_data['organization_name']}: {e}"
+                logger.warning(error_msg)
+                enhanced_data['enhancement_errors'].append(f"Detail URL lookup failed: {str(e)}")
 
         # Always initialize tier_2_detail, even if we couldn't find the URL
         if detail_url:
@@ -811,12 +922,35 @@ def process_california_ag_breaches(scraper_logger=None):
         else:
             logger.info(f"Collected {len(filtered_breaches)} total historical breaches (no filtering)")
 
+        # Resolve every detail URL from a single fetch of the listing page, and load the
+        # enhancement status of everything already stored in one batch. Both used to happen
+        # per record: the listing page was re-downloaded for each breach, and the database was
+        # queried only after that breach had already been fully enriched.
+        detail_url_map = build_detail_url_map()
+        existing_items = supabase_client.get_enhancement_status_for_source(SOURCE_ID_CALIFORNIA_AG)
+
         # Process each breach record
         processed_count = 0
+        skipped_count = 0
         total_breaches = len(filtered_breaches)
 
         for i, breach_record in enumerate(filtered_breaches, 1):
             try:
+                # Resolve the detail URL before any enrichment so it can serve as the identity
+                # for the duplicate check below.
+                detail_url = resolve_detail_url(breach_record['organization_name'], detail_url_map)
+                candidate_item_url = detail_url or build_fallback_item_url(breach_record)
+
+                # Skip records that are already stored and have nothing left to gain from
+                # re-enrichment, BEFORE paying for the detail page and PDF downloads.
+                existing_status = existing_items.get(candidate_item_url)
+                if existing_status and is_enhancement_complete(existing_status):
+                    skipped_count += 1
+                    logger.debug(
+                        f"Skipping complete item: {breach_record['organization_name']}"
+                    )
+                    continue
+
                 # Log progress every 10 records
                 if i % 10 == 0 or i == 1:
                     logger.info(f"Processing breach {i}/{total_breaches} ({(i/total_breaches)*100:.1f}%)")
@@ -829,7 +963,7 @@ def process_california_ag_breaches(scraper_logger=None):
                         )
 
                 # Tier 2: Enhance with additional data
-                enhanced_record = enhance_breach_data(breach_record)
+                enhanced_record = enhance_breach_data(breach_record, detail_url=detail_url)
 
                 # Extract enhanced data for database fields
                 affected_individuals = None
@@ -840,14 +974,17 @@ def process_california_ag_breaches(scraper_logger=None):
                 what_information_involved_text = None
                 if enhanced_record.get('tier_3_pdf_analysis'):
                     for pdf_analysis in enhanced_record['tier_3_pdf_analysis']:
-                        # Extract affected individuals with confidence scoring
-                        if pdf_analysis.get('affected_individuals'):
-                            if isinstance(pdf_analysis['affected_individuals'], dict):
+                        # Keep the first real count found rather than the last one seen.
+                        # A failed extraction still returns a truthy dict whose 'count' is None,
+                        # so assigning unconditionally let a later empty PDF erase a good value
+                        # recovered from an earlier one.
+                        if affected_individuals is None and pdf_analysis.get('affected_individuals'):
+                            candidate = pdf_analysis['affected_individuals']
+                            if isinstance(candidate, dict):
                                 # New enhanced format with confidence
-                                affected_individuals = pdf_analysis['affected_individuals'].get('count')
-                            else:
-                                # Legacy format (simple number)
-                                affected_individuals = pdf_analysis['affected_individuals']
+                                candidate = candidate.get('count')
+                            if candidate:
+                                affected_individuals = candidate
 
                         # Extract data types
                         if pdf_analysis.get('data_types_compromised'):
@@ -932,7 +1069,10 @@ def process_california_ag_breaches(scraper_logger=None):
 
                 db_item = {
                     'source_id': SOURCE_ID_CALIFORNIA_AG,
-                    'item_url': enhanced_record.get('tier_2_detail', {}).get('detail_page_url', CALIFORNIA_AG_BREACH_URL),
+                    # Falls back to a per-record anchored URL rather than the shared listing URL,
+                    # which is UNIQUE-constrained and would collapse every unresolved breach
+                    # onto a single row.
+                    'item_url': enhanced_record.get('tier_2_detail', {}).get('detail_page_url') or candidate_item_url,
                     'title': enhanced_record['organization_name'],
                     'publication_date': enhanced_record['reported_date'],
                     'summary_text': summary_text,
@@ -1063,13 +1203,20 @@ def process_california_ag_breaches(scraper_logger=None):
                 logger.error(f"   This breach will be missed in this run but scraper continues")
                 # Continue to next record - don't let one failure stop everything
 
-        logger.info(f"California AG enhanced breach fetch completed. Processed {processed_count} items.")
+        logger.info(
+            f"California AG enhanced breach fetch completed. "
+            f"Processed {processed_count}, skipped {skipped_count} already-complete "
+            f"of {total_breaches} in window."
+        )
 
-        # Return statistics for logging
+        # Return statistics for logging. skipped_count is now the real count of records that
+        # were recognised as complete and bypassed before enrichment, rather than a subtraction
+        # that also absorbed failures.
         return {
             'processed_count': processed_count,
             'inserted_count': processed_count,  # For CA AG, processed = inserted
-            'skipped_count': total_breaches - processed_count,
+            'skipped_count': skipped_count,
+            'failed_count': total_breaches - processed_count - skipped_count,
             'total_breaches': total_breaches
         }
 

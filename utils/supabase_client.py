@@ -75,6 +75,76 @@ class SupabaseClient:
             logger.error(f"Error checking if item exists for URL {item_url}: {e}")
             return False
 
+    def get_enhancement_status_for_source(self, source_id: int, page_size: int = 1000) -> dict:
+        """
+        Fetch the enhancement status of every stored item for one source in a single pass,
+        keyed by item_url.
+
+        This is the batch equivalent of calling get_item_enhancement_status() once per record.
+        Scrapers use it to decide, before doing any network enrichment, whether a record is
+        already stored and complete. Doing that per-record cost one round trip per breach and,
+        worse, meant the expensive detail-page and PDF work happened before the check.
+
+        Returns {} on failure rather than raising, so a caller that cannot reach the database
+        degrades to treating every record as new instead of aborting the run.
+        """
+        items = {}
+        offset = 0
+        try:
+            while True:
+                response = (
+                    self.client.table("scraped_items")
+                    .select("id, item_url, raw_data_json, affected_individuals, notice_document_url")
+                    .eq("source_id", source_id)
+                    .order("id")
+                    .range(offset, offset + page_size - 1)
+                    .execute()
+                )
+                rows = response.data or []
+                for item in rows:
+                    items[item["item_url"]] = self._build_enhancement_status(item)
+                if len(rows) < page_size:
+                    break
+                offset += page_size
+            logger.info(f"Loaded enhancement status for {len(items)} existing items (source_id={source_id})")
+            return items
+        except Exception as e:
+            logger.error(f"Error batch-loading enhancement status for source {source_id}: {e}")
+            return {}
+
+    def _build_enhancement_status(self, item: dict) -> dict:
+        """Derive the enhancement-status view of a stored row. Shared by the single and batch paths."""
+        raw_data = item.get('raw_data_json', {}) or {}
+
+        status = {
+            'exists': True,
+            'item_id': item['id'],
+            'has_enhancement_errors': False,
+            'has_successful_enhancement': False,
+            'has_pdf_analysis': False,
+            'affected_individuals': item.get('affected_individuals'),
+            'notice_document_url': item.get('notice_document_url'),
+            'raw_data_json': raw_data,
+            'enhancement_errors': []
+        }
+
+        tier_2_data = raw_data.get('tier_2_enhanced', {}) if isinstance(raw_data, dict) else {}
+        if isinstance(tier_2_data, dict):
+            enhancement_errors = tier_2_data.get('enhancement_errors', [])
+            if enhancement_errors:
+                status['has_enhancement_errors'] = True
+                status['enhancement_errors'] = enhancement_errors
+            if tier_2_data.get('enhancement_attempted') and not enhancement_errors:
+                status['has_successful_enhancement'] = True
+
+        pdf_analysis = raw_data.get('tier_3_pdf_analysis', []) if isinstance(raw_data, dict) else []
+        if isinstance(pdf_analysis, list) and pdf_analysis:
+            status['has_pdf_analysis'] = any(
+                pdf.get('pdf_analyzed', False) for pdf in pdf_analysis if isinstance(pdf, dict)
+            )
+
+        return status
+
     def get_item_enhancement_status(self, item_url: str) -> dict:
         """
         Get the enhancement status of an existing item to determine if it needs updating.
