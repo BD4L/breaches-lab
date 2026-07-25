@@ -54,15 +54,18 @@ jobs:
           # in astro.config.mjs. The staging mirror sets these as repository variables.
           PUBLIC_BASE_PATH: ${{ vars.PUBLIC_BASE_PATH }}
           PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
-          # PUBLIC_GITHUB_TOKEN is deliberately NOT passed here.
+          # Powers the in-page scraper controls.
           #
-          # Astro inlines every PUBLIC_* variable into the client bundle at build time, so
-          # supplying a personal access token published it in plain text to every visitor of
-          # the site. There is no way to hand a browser a GitHub token and keep it secret.
-          #
-          # This disables the in-page scraper controls, which will report that no token is
-          # configured. Restoring that feature safely requires a server-side proxy holding the
-          # credential, not a PUBLIC_ variable.
+          # Note that Astro inlines every PUBLIC_* variable into the client bundle at build
+          # time, so whatever token is set here is readable by any visitor. Use a fine-grained
+          # token limited to this repository with only "Actions: read and write" — a classic
+          # ghp_ token carries account-wide scope, and a workflow-scoped one can be used to
+          # print this repository's other secrets.
+          PUBLIC_GITHUB_TOKEN: ${{ secrets.PUBLIC_GITHUB_TOKEN }}
+          # Which repository the controls drive. Unset in production, which falls back to
+          # BD4L/Breaches; the staging mirror points these at itself.
+          PUBLIC_GITHUB_OWNER: ${{ vars.PUBLIC_GITHUB_OWNER }}
+          PUBLIC_GITHUB_REPO: ${{ vars.PUBLIC_GITHUB_REPO }}
         run: |
           cd frontend
           npm run build

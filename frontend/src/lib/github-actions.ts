@@ -21,8 +21,14 @@ interface Workflow {
 }
 
 class GitHubActionsAPI {
-  private owner = 'HackerManMarlin'
-  private repo = 'Breaches'
+  // Target repository. Defaults to production; the staging mirror overrides these so its
+  // controls drive its own workflows rather than production's.
+  //
+  // 'HackerManMarlin' was the account's previous name. Calls still resolved because GitHub
+  // redirects renamed owners, but a rename redirect is not something to depend on, and
+  // browsers do not reliably preserve the method across a 301 for the POST dispatch calls.
+  private owner = import.meta.env.PUBLIC_GITHUB_OWNER || 'BD4L'
+  private repo = import.meta.env.PUBLIC_GITHUB_REPO || 'Breaches'
   private baseUrl = 'https://api.github.com'
   
   // Note: In production, this should be handled server-side for security
