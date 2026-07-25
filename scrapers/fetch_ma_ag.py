@@ -27,7 +27,50 @@ logger = logging.getLogger(__name__)
 # Constants
 MASSACHUSETTS_AG_BASE_URL = "https://www.mass.gov"
 MASSACHUSETTS_AG_SUMMARY_URL = "https://www.mass.gov/lists/data-breach-notification-reports"
-MASSACHUSETTS_AG_2025_PDF_URL = "https://www.mass.gov/doc/data-breach-report-2025/download"
+def _annual_report_url(year: int) -> str:
+    return f"https://www.mass.gov/doc/data-breach-report-{year}/download"
+
+
+def _resolve_annual_report_url() -> str:
+    """
+    Pick the annual report to parse. Defaults to the current calendar year.
+
+    Massachusetts publishes one PDF per year. Pinning the year means the scraper re-parses a
+    frozen archive and can never see current-year breaches, which is what happened when this was
+    fixed at 2025.
+
+    Deliberately does NOT probe the URL first. mass.gov sits behind a WAF that returns 403 to
+    plain requests regardless of whether the document exists, so a probe cannot distinguish
+    "not published yet" from "blocked" — and treating a 403 as "not published" would silently
+    pin the scraper to last year's report, reproducing the original bug. Instead the year falls
+    back only when a real download attempt returns no records; see _annual_report_candidates().
+
+    Override with MA_AG_REPORT_YEAR for a backfill.
+    """
+    override = os.environ.get("MA_AG_REPORT_YEAR", "").strip()
+    if override.isdigit():
+        return _annual_report_url(int(override))
+    return _annual_report_url(datetime.now().year)
+
+
+def _annual_report_candidates() -> list:
+    """
+    Report URLs to try, in order: the current year, then the previous one.
+
+    The previous year is a genuine fallback for early January, before the new report is
+    published. It is applied only after an actual parse attempt yields nothing, using the
+    WAF-aware download path, rather than on the basis of an unreliable HEAD request.
+    """
+    override = os.environ.get("MA_AG_REPORT_YEAR", "").strip()
+    if override.isdigit():
+        return [_annual_report_url(int(override))]
+
+    this_year = datetime.now().year
+    return [_annual_report_url(this_year), _annual_report_url(this_year - 1)]
+
+
+# Assigned below, once COMMON_HEADERS exists (the probe needs it).
+MASSACHUSETTS_AG_2025_PDF_URL = None
 SOURCE_ID_MASSACHUSETTS_AG = 11
 
 # Environment variables for configuration
@@ -53,6 +96,11 @@ COMMON_HEADERS = {
     "Sec-Fetch-User": "?1",
     "Cache-Control": "max-age=0"
 }
+
+# Resolved once at import, after COMMON_HEADERS exists, so every reference below uses the
+# same annual report for the whole run.
+MASSACHUSETTS_AG_2025_PDF_URL = _resolve_annual_report_url()
+logger.info(f"Massachusetts annual report: {MASSACHUSETTS_AG_2025_PDF_URL}")
 
 # Global session for cookie persistence
 _session = None
@@ -644,6 +692,10 @@ def process_massachusetts_ag_breaches():
     Enhanced Massachusetts AG Security Breach Notification processing.
     Uses annual PDF report with change detection for efficient processing.
     """
+    # Rebound below once a candidate report actually yields records, so every field derived
+    # from it (item_url, notice_document_url, raw_data_json) refers to the report in use.
+    global MASSACHUSETTS_AG_2025_PDF_URL
+
     logger.info("Starting Enhanced Massachusetts AG Security Breach Notification processing...")
     logger.info(f"Processing mode: {MA_AG_PROCESSING_MODE}")
     logger.info(f"Date filter: Only processing breaches from last {MA_AG_FILTER_DAYS_BACK} days")
@@ -685,12 +737,30 @@ def process_massachusetts_ag_breaches():
             logger.info("No changes detected - exiting without processing PDF")
             return
 
-    # Process the annual PDF
+    # Process the annual PDF.
+    #
+    # Try the current year first and fall back to the previous one only when a real download and
+    # parse produces nothing. This is the fallback signal that a HEAD probe cannot provide,
+    # because mass.gov's WAF answers 403 whether or not the document exists.
     logger.info("Changes detected - processing annual PDF...")
-    breach_records = parse_annual_pdf_content(MASSACHUSETTS_AG_2025_PDF_URL)
+
+    breach_records = []
+    for candidate_url in _annual_report_candidates():
+        logger.info(f"Attempting annual report: {candidate_url}")
+        breach_records = parse_annual_pdf_content(candidate_url)
+        if breach_records:
+            # Pin the module-level URL to whichever report actually produced records, so the
+            # item_url, notice_document_url and raw_data_json written below all agree with it.
+            MASSACHUSETTS_AG_2025_PDF_URL = candidate_url
+            logger.info(f"Using annual report {candidate_url} ({len(breach_records)} records)")
+            break
+        logger.warning(f"No records parsed from {candidate_url}")
 
     if not breach_records:
-        logger.error("No breach records found in PDF")
+        logger.error(
+            "No breach records found in any candidate annual report. The report may not be "
+            "published yet, or mass.gov may be blocking the request."
+        )
         return
 
     total_processed = 0
@@ -770,7 +840,13 @@ def process_massachusetts_ag_breaches():
             # Prepare item data for database
             item_data = {
                 "source_id": SOURCE_ID_MASSACHUSETTS_AG,
-                "item_url": MASSACHUSETTS_AG_2025_PDF_URL,  # Link to annual report
+                # Anchored per record. scraped_items.item_url is UNIQUE, and Massachusetts
+                # publishes all of its breaches inside one annual PDF rather than on per-breach
+                # pages — so using the report URL directly meant every row in the state collided
+                # on a single key and only one Massachusetts breach could ever be stored.
+                # incident_uid is derived from organisation name and breach number, so it is
+                # stable across runs.
+                "item_url": f"{MASSACHUSETTS_AG_2025_PDF_URL}#{incident_uid}",
                 "title": org_name,
                 "publication_date": reported_date or current_time,
                 "summary_text": f"Data breach notification for {org_name} reported to Massachusetts AG ({breach_number})",

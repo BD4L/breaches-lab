@@ -23,7 +23,44 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Constants
-IOWA_AG_2025_URL = "https://www.iowaattorneygeneral.gov/for-consumers/security-breach-notifications/2025-security-breach-notification/"
+IOWA_AG_BASE_URL = "https://www.iowaattorneygeneral.gov/for-consumers/security-breach-notifications"
+
+
+def _iowa_year_url(year: int) -> str:
+    return f"{IOWA_AG_BASE_URL}/{year}-security-breach-notification/"
+
+
+def _resolve_iowa_url() -> str:
+    """
+    Notification page for the current year.
+
+    Iowa publishes one page per calendar year. Pinning the year meant the scraper kept reading a
+    frozen archive and could never see current-year breaches.
+
+    No network probe here: doing one at import makes the module slow and fragile to import, and
+    a failed probe cannot distinguish "not published yet" from "temporarily unreachable" — so
+    treating failure as absence would silently pin the scraper to last year. The fallback is
+    applied against a real fetch instead; see _iowa_url_candidates().
+
+    Override with IA_AG_YEAR for a backfill.
+    """
+    override = os.environ.get("IA_AG_YEAR", "").strip()
+    if override.isdigit():
+        return _iowa_year_url(int(override))
+    return _iowa_year_url(datetime.now().year)
+
+
+def _iowa_url_candidates() -> list:
+    """Pages to try in order: current year, then the previous one for the early-January gap."""
+    override = os.environ.get("IA_AG_YEAR", "").strip()
+    if override.isdigit():
+        return [_iowa_year_url(int(override))]
+
+    this_year = datetime.now().year
+    return [_iowa_year_url(this_year), _iowa_year_url(this_year - 1)]
+
+
+IOWA_AG_2025_URL = _resolve_iowa_url()
 SOURCE_ID_IOWA_AG = 8
 
 # Configuration from environment variables
@@ -280,11 +317,25 @@ def process_iowa_ag_breaches_2025():
         filter_date = None
         logger.info("Testing mode: collecting ALL 2025 breach data (no date filtering)")
 
-    try:
-        response = requests.get(IOWA_AG_2025_URL, headers=REQUEST_HEADERS, timeout=30)
-        response.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Error fetching Iowa AG 2025 breach data page: {e}")
+    # Try the current year's page, falling back to the previous year only when the current one
+    # cannot be fetched. The fallback is driven by a real request rather than an import-time
+    # probe, so a transient failure cannot silently pin the scraper to a stale year.
+    global IOWA_AG_2025_URL
+
+    response = None
+    for candidate_url in _iowa_url_candidates():
+        try:
+            candidate_response = requests.get(candidate_url, headers=REQUEST_HEADERS, timeout=30)
+            candidate_response.raise_for_status()
+            response = candidate_response
+            IOWA_AG_2025_URL = candidate_url
+            logger.info(f"Using Iowa AG notification page: {candidate_url}")
+            break
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"Could not fetch {candidate_url}: {e}")
+
+    if response is None:
+        logger.error("Could not fetch any Iowa AG notification page; aborting")
         return
 
     soup = BeautifulSoup(response.content, 'html.parser')

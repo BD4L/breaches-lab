@@ -113,6 +113,30 @@ def process_hibp_breaches():
     processed_count = 0
     skipped_count = 0
 
+    # Load the URLs already stored for this source once, so the loop can skip known breaches
+    # without a query each. HIBP returns its entire catalogue on every call and almost all of it
+    # is already stored, so this turns ~800 rejected inserts per run into one read.
+    existing_item_urls = set()
+    try:
+        offset, page_size = 0, 1000
+        while True:
+            page = (supabase_client.client.table("scraped_items")
+                    .select("item_url")
+                    .eq("source_id", SOURCE_ID_HIBP)
+                    .order("id")
+                    .range(offset, offset + page_size - 1)
+                    .execute())
+            rows = page.data or []
+            existing_item_urls.update(r["item_url"] for r in rows if r.get("item_url"))
+            if len(rows) < page_size:
+                break
+            offset += page_size
+        logger.info(f"Loaded {len(existing_item_urls)} existing HIBP item URLs for deduplication")
+    except Exception as e:
+        # Degrade to the previous behaviour rather than aborting: the UNIQUE constraint still
+        # prevents duplicates, it is just noisier and slower.
+        logger.warning(f"Could not preload existing HIBP items ({e}); relying on insert conflicts")
+
     for breach_entry in breaches_data:
         processed_count += 1
         try:
@@ -195,9 +219,13 @@ def process_hibp_breaches():
                 "tags_keywords": tags
             }
             
-            # TODO: Implement check for existing record before inserting (e.g., by item_url or by HIBP Name in raw_data_json)
-            # Example: query_result = supabase_client.client.table("scraped_items").select("id").eq("raw_data_json->>hibp_name", name).eq("source_id", SOURCE_ID_HIBP).execute()
-            # if query_result.data: logger.info(f"HIBP item '{name}' already exists. Skipping."); skipped_count +=1; continue
+            # Skip anything already stored. Without this the whole HIBP catalogue was re-sent on
+            # every run and the only thing preventing duplicates was the UNIQUE constraint
+            # rejecting each insert, which produced an error log line per breach and paid for a
+            # round trip per breach. existing_item_urls is loaded once before the loop.
+            if item_url in existing_item_urls:
+                skipped_count += 1
+                continue
 
             insert_response = supabase_client.insert_item(**item_data)
             if insert_response:

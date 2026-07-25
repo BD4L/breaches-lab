@@ -108,8 +108,12 @@ def parse_date_to_date_only(date_str: str) -> str | None:
     if iso_date:
         return iso_date.split('T')[0]  # Extract just the date part
 
-    # If parsing failed, return the original string to preserve the information
-    return date_str.strip()
+    # Return None rather than the raw string. breach_date and reported_date are DATE columns,
+    # so handing them unparseable text makes the whole row insert fail and the breach is dropped
+    # entirely. The original text is preserved in raw_data_json under the *_raw keys, so nothing
+    # is lost by declining to guess here.
+    logger.warning(f"Could not parse date '{date_str.strip()}'; storing NULL (raw text kept in raw_data_json)")
+    return None
 
 def process_south_carolina_ag_breaches():
     """
@@ -292,6 +296,12 @@ def process_south_carolina_ag_breaches():
             }
 
             # Check for existing record using stable identifiers
+            # Set by the incident_uid check below. It cannot use `continue` directly, because
+            # that check runs inside an inner loop over candidate rows, so `continue` there only
+            # advanced the inner loop and execution fell through to the insert anyway — the
+            # duplicate was logged as skipped, counted as skipped, and then inserted.
+            duplicate_by_uid = False
+
             try:
                 # First check by URL (most reliable)
                 query_result = supabase_client.client.table("scraped_items").select("id").eq("item_url", item_specific_url).eq("source_id", SOURCE_ID_SOUTH_CAROLINA_AG).execute()
@@ -302,16 +312,21 @@ def process_south_carolina_ag_breaches():
 
                 # Secondary check by incident_uid in raw_data_json
                 query_result = supabase_client.client.table("scraped_items").select("id, raw_data_json").eq("title", entity_name).eq("source_id", SOURCE_ID_SOUTH_CAROLINA_AG).execute()
-                for existing_item in query_result.data or []:
-                    existing_raw_data = existing_item.get('raw_data_json', {})
-                    existing_uid = existing_raw_data.get('south_carolina_ag_derived', {}).get('incident_uid')
-                    if existing_uid == incident_uid:
-                        logger.info(f"Item '{entity_name}' with incident_uid {incident_uid} already exists. Skipping.")
-                        skipped_count += 1
-                        continue
+                duplicate_by_uid = any(
+                    ((existing_item.get('raw_data_json') or {})
+                     .get('south_carolina_ag_derived', {})
+                     .get('incident_uid')) == incident_uid
+                    for existing_item in (query_result.data or [])
+                )
+                if duplicate_by_uid:
+                    logger.info(f"Item '{entity_name}' with incident_uid {incident_uid} already exists. Skipping.")
+                    skipped_count += 1
 
             except Exception as e_check:
                 logger.warning(f"Could not check for existing record: {e_check}. Proceeding with insert.")
+
+            if duplicate_by_uid:
+                continue
 
             try:
                 insert_response = supabase_client.insert_item(**item_data)

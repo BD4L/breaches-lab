@@ -107,8 +107,12 @@ def parse_date_to_date_only(date_str: str) -> str | None:
     if iso_date:
         return iso_date.split('T')[0]  # Extract just the date part
 
-    # If parsing failed, return the original string to preserve the information
-    return date_str.strip()
+    # Return None rather than the raw string. breach_date and reported_date are DATE columns,
+    # so handing them unparseable text makes the whole row insert fail and the breach is dropped
+    # entirely. The original text is preserved in raw_data_json under the *_raw keys, so nothing
+    # is lost by declining to guess here.
+    logger.warning(f"Could not parse date '{date_str.strip()}'; storing NULL (raw text kept in raw_data_json)")
+    return None
 
 def is_recent_breach_wa(date_str: str) -> bool:
     """
