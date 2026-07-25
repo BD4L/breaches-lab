@@ -30,6 +30,135 @@ logger = logging.getLogger(__name__)
 # Snapshot file location - can be overridden via environment variable
 SNAPSHOT_FILE = os.environ.get('SNAPSHOT_FILE', '/tmp/scraper_snapshot.json')
 
+# Source types that count as breaches vs news when categorising the dashboard view.
+BREACH_SOURCE_TYPES = [
+    'State AG', 'Government Portal', 'Breach Database',
+    'State Cybersecurity', 'State Agency', 'API',
+    'Federal Portal', 'Regulatory Filing'
+]
+NEWS_SOURCE_TYPES = ['News Feed', 'Company IR', 'RSS Feed']
+
+
+def _summarise_source_groups(groups):
+    """
+    Turn per-source aggregates into the dashboard statistics.
+
+    groups is a list of {source_type, source_name, item_count, affected_sum}. Every strategy in
+    fetch_source_groups() produces this same shape, so the resulting numbers do not depend on
+    which one ran.
+    """
+    source_type_counts = {}
+    source_counts = {}
+    breach_count = 0
+    news_count = 0
+    total_affected = 0
+
+    for group in groups:
+        source_type = group.get('source_type') or 'Unknown'
+        source_name = group.get('source_name') or 'Unknown'
+        item_count = group.get('item_count') or 0
+        affected_sum = group.get('affected_sum') or 0
+
+        source_type_counts[source_type] = source_type_counts.get(source_type, 0) + item_count
+        source_counts[source_name] = source_counts.get(source_name, 0) + item_count
+
+        if source_type in BREACH_SOURCE_TYPES:
+            breach_count += item_count
+            total_affected += affected_sum
+        elif source_type in NEWS_SOURCE_TYPES:
+            news_count += item_count
+        else:
+            logger.warning(f"Unknown source type: '{source_type}' from {source_name}")
+
+    return {
+        'breach_count': breach_count,
+        'news_count': news_count,
+        'total_affected': total_affected,
+        'by_source_type': source_type_counts,
+        'by_source': source_counts,
+    }
+
+
+def fetch_source_groups(supabase):
+    """
+    Fetch per-source counts and affected-individual sums.
+
+    Tries progressively cheaper-to-support strategies and returns on the first that works:
+
+      1. The get_dashboard_stats() RPC, if it has been created. One round trip.
+      2. A PostgREST grouped aggregate, which returns one row per source rather than one row
+         per item. Supported on current Supabase.
+      3. Paginating the whole view and grouping client-side.
+
+    Strategy 3 is the original behaviour and is kept only as a last resort. It downloads every
+    row in the view on every call, and this function is called twice per workflow run across
+    three scheduled workflows, which is the single largest consumer of the free tier's 5 GB
+    monthly egress allowance.
+    """
+    # 1. Purpose-built RPC.
+    try:
+        response = supabase.rpc('get_dashboard_stats', {}).execute()
+        if response.data:
+            rows = response.data if isinstance(response.data, list) else [response.data]
+            groups = [
+                {
+                    'source_type': r.get('source_type'),
+                    'source_name': r.get('source_name'),
+                    'item_count': r.get('item_count'),
+                    'affected_sum': r.get('affected_sum'),
+                }
+                for r in rows
+            ]
+            logger.info(f"Source groups via get_dashboard_stats() RPC ({len(groups)} groups)")
+            return groups
+    except Exception as e:
+        logger.debug(f"get_dashboard_stats() RPC unavailable, falling back: {e}")
+
+    # 2. Grouped aggregate. Non-aggregate columns in the select form the GROUP BY.
+    try:
+        response = supabase.table("v_breach_dashboard").select(
+            "source_type, source_name, item_count:count(), affected_sum:affected_individuals.sum()"
+        ).execute()
+        if response.data:
+            logger.info(f"Source groups via grouped aggregate ({len(response.data)} groups)")
+            return response.data
+    except Exception as e:
+        logger.debug(f"Grouped aggregate unavailable, falling back to full scan: {e}")
+
+    # 3. Full scan. Correct, but downloads the entire view.
+    logger.warning(
+        "Falling back to a full scan of v_breach_dashboard. This transfers every row on every "
+        "call. Create the get_dashboard_stats() RPC from database_schema_dashboard_stats.sql "
+        "to avoid it."
+    )
+    all_rows = []
+    page_size = 1000
+    offset = 0
+    while True:
+        response = supabase.table("v_breach_dashboard").select(
+            "source_type, source_name, affected_individuals"
+        ).order("source_name").range(offset, offset + page_size - 1).execute()
+        rows = response.data or []
+        if not rows:
+            break
+        all_rows.extend(rows)
+        if len(rows) < page_size:
+            break
+        offset += page_size
+
+    grouped = {}
+    for item in all_rows:
+        key = (item.get('source_type'), item.get('source_name'))
+        entry = grouped.setdefault(key, {
+            'source_type': key[0], 'source_name': key[1], 'item_count': 0, 'affected_sum': 0
+        })
+        entry['item_count'] += 1
+        entry['affected_sum'] += item.get('affected_individuals') or 0
+
+    logger.info(f"Source groups via full scan ({len(all_rows)} rows -> {len(grouped)} groups)")
+    return list(grouped.values())
+
+
 def get_database_stats():
     """
     Get comprehensive database statistics.
@@ -55,30 +184,12 @@ def get_database_stats():
         stats['total_items'] = response.count or 0
         logger.info(f"Total items in database: {stats['total_items']}")
         
-        # Get all data from the view and categorize properly
-        logger.info("Fetching breach dashboard data for categorization...")
+        # Per-source aggregates, computed in the database where possible.
+        logger.info("Fetching breach dashboard aggregates for categorization...")
 
-        # Fetch all records using pagination to avoid 1000 record limit
-        all_data = []
-        page_size = 1000
-        offset = 0
+        source_groups = fetch_source_groups(supabase)
 
-        while True:
-            response = supabase.table("v_breach_dashboard").select("source_type, source_name, affected_individuals").range(offset, offset + page_size - 1).execute()
-
-            if not response.data:
-                break
-
-            all_data.extend(response.data)
-            logger.info(f"Fetched {len(response.data)} records (offset {offset})")
-
-            # If we got less than page_size records, we've reached the end
-            if len(response.data) < page_size:
-                break
-
-            offset += page_size
-
-        if not all_data:
+        if not source_groups:
             logger.warning("No data returned from v_breach_dashboard")
             stats['breach_count'] = 0
             stats['news_count'] = 0
@@ -86,51 +197,11 @@ def get_database_stats():
             stats['by_source_type'] = {}
             stats['by_source'] = {}
         else:
-            logger.info(f"Retrieved {len(all_data)} total records from v_breach_dashboard")
-            
-            # Categorize data
-            source_type_counts = {}
-            source_counts = {}
-            breach_count = 0
-            news_count = 0
-            total_affected = 0
-
-            # Updated categorization with more comprehensive types
-            breach_types = [
-                'State AG', 'Government Portal', 'Breach Database', 
-                'State Cybersecurity', 'State Agency', 'API', 
-                'Federal Portal', 'Regulatory Filing'
-            ]
-            news_types = ['News Feed', 'Company IR', 'RSS Feed']
-
-            for item in all_data:
-                source_type = item.get('source_type', 'Unknown')
-                source_name = item.get('source_name', 'Unknown')
-                affected = item.get('affected_individuals', 0) or 0
-
-                # Count by source type
-                source_type_counts[source_type] = source_type_counts.get(source_type, 0) + 1
-                
-                # Count by individual source
-                source_counts[source_name] = source_counts.get(source_name, 0) + 1
-                
-                # Categorize as breach or news
-                if source_type in breach_types:
-                    breach_count += 1
-                    total_affected += affected
-                elif source_type in news_types:
-                    news_count += 1
-                else:
-                    # Log unknown source types for debugging
-                    logger.warning(f"Unknown source type: '{source_type}' from {source_name}")
-
-            stats['breach_count'] = breach_count
-            stats['news_count'] = news_count
-            stats['total_affected'] = total_affected
-            stats['by_source_type'] = source_type_counts
-            stats['by_source'] = source_counts
-            
-            logger.info(f"Categorized: {breach_count} breaches, {news_count} news, {total_affected} affected")
+            stats.update(_summarise_source_groups(source_groups))
+            logger.info(
+                f"Categorized: {stats['breach_count']} breaches, {stats['news_count']} news, "
+                f"{stats['total_affected']} affected"
+            )
         
         # Recent items (last 24 hours)
         yesterday = (datetime.now() - timedelta(days=1)).isoformat()
