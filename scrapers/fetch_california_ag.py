@@ -755,7 +755,13 @@ def analyze_pdf_content(pdf_url: str) -> dict:
             'extraction_confidence': 'failed'
         }
 
-def enhance_breach_data(breach_record: dict, detail_url: str | None = None) -> dict:
+# Distinguishes "caller did not attempt resolution" from "caller attempted and found nothing".
+# Without it, passing None for an unresolvable record made this function re-fetch and re-parse
+# the whole listing page to retry a lookup that had already failed against the same data.
+_UNRESOLVED = object()
+
+
+def enhance_breach_data(breach_record: dict, detail_url=_UNRESOLVED) -> dict:
     """
     Enhance breach data by fetching detailed information (Tier 2 - Derived/Enriched).
     CRITICAL: Always returns enhanced_data even if enhancement fails.
@@ -785,7 +791,7 @@ def enhance_breach_data(breach_record: dict, detail_url: str | None = None) -> d
         # on the listing page, so they have to be resolved from it. The caller normally passes
         # one in from the map built once per run; falling back to a single-URL lookup here keeps
         # this function usable on its own.
-        if not detail_url:
+        if detail_url is _UNRESOLVED:
             try:
                 detail_url = resolve_detail_url(
                     enhanced_data['organization_name'], build_detail_url_map()
@@ -794,6 +800,7 @@ def enhance_breach_data(breach_record: dict, detail_url: str | None = None) -> d
                 error_msg = f"Could not find detail URL for {enhanced_data['organization_name']}: {e}"
                 logger.warning(error_msg)
                 enhanced_data['enhancement_errors'].append(f"Detail URL lookup failed: {str(e)}")
+                detail_url = None
 
         # Always initialize tier_2_detail, even if we couldn't find the URL
         if detail_url:
@@ -898,6 +905,27 @@ def process_california_ag_breaches(scraper_logger=None):
             filter_date = None
             logger.info("Testing mode: collecting ALL historical breach data (no date filtering)")
 
+        # Widen the window backwards to cover any gap since the last stored record.
+        #
+        # A window measured only from today silently drops everything reported during an outage
+        # longer than the lookback: those records fall out of range before the next successful
+        # run ever sees them, and nothing revisits them. Anchoring on the newest record actually
+        # stored means the window self-heals after downtime and stays small in steady state.
+        if filter_date:
+            watermark = supabase_client.get_latest_publication_date(SOURCE_ID_CALIFORNIA_AG)
+            if watermark:
+                try:
+                    watermark_date = datetime.strptime(watermark[:10], '%Y-%m-%d').date()
+                    catchup_from = watermark_date - timedelta(days=1)  # re-check the boundary day
+                    if catchup_from < filter_date:
+                        logger.info(
+                            f"Last stored record is {watermark_date}; widening window from "
+                            f"{filter_date} to {catchup_from} to cover the gap"
+                        )
+                        filter_date = catchup_from
+                except ValueError:
+                    logger.warning(f"Could not parse watermark '{watermark}', keeping rolling window")
+
         filtered_breaches = []
 
         for breach in csv_breach_data:
@@ -927,7 +955,29 @@ def process_california_ag_breaches(scraper_logger=None):
         # per record: the listing page was re-downloaded for each breach, and the database was
         # queried only after that breach had already been fully enriched.
         detail_url_map = build_detail_url_map()
-        existing_items = supabase_client.get_enhancement_status_for_source(SOURCE_ID_CALIFORNIA_AG)
+
+        # Abort rather than proceed without detail URLs. If the map is empty every record would
+        # fall back to a synthetic item_url, miss the existing row keyed on its real detail URL,
+        # and be inserted again — turning one bad listing-page fetch into a duplicate of every
+        # record in the window. item_url is UNIQUE and nothing dedups source 4 afterwards.
+        if not detail_url_map:
+            logger.error(
+                "Listing page produced no detail URLs; aborting before any writes. "
+                "The site may be unreachable or its report link format may have changed."
+            )
+            return {
+                'processed_count': 0, 'inserted_count': 0, 'skipped_count': 0,
+                'failed_count': 0, 'total_breaches': len(filtered_breaches),
+                'aborted': 'no_detail_urls',
+            }
+
+        # Bounded by the same window as the input, so this read does not grow with stored history.
+        existing = supabase_client.get_enhancement_status_for_source(
+            SOURCE_ID_CALIFORNIA_AG,
+            since_date=filter_date.isoformat() if filter_date else None,
+        )
+        existing_items = existing['by_url']
+        existing_by_uid = existing['by_incident_uid']
 
         # Process each breach record
         processed_count = 0
@@ -943,7 +993,19 @@ def process_california_ag_breaches(scraper_logger=None):
 
                 # Skip records that are already stored and have nothing left to gain from
                 # re-enrichment, BEFORE paying for the detail page and PDF downloads.
+                #
+                # Fall back to the content-derived incident_uid when the URL does not match.
+                # A stored row can legitimately sit under a different detail URL than the one
+                # resolved today, because the listing page's link text changes; matching on
+                # identity rather than URL keeps that from inserting a duplicate.
                 existing_status = existing_items.get(candidate_item_url)
+                if existing_status is None:
+                    existing_status = existing_by_uid.get(breach_record['incident_uid'])
+                    if existing_status:
+                        logger.info(
+                            f"Matched {breach_record['organization_name']} by incident_uid; "
+                            f"detail URL moved to {candidate_item_url}"
+                        )
                 if existing_status and is_enhancement_complete(existing_status):
                     skipped_count += 1
                     logger.debug(
@@ -1118,6 +1180,18 @@ def process_california_ag_breaches(scraper_logger=None):
                 # Smart duplicate handling: Check if item exists and if it needs enhancement updates
                 item_url = db_item['item_url']
                 enhancement_status = supabase_client.get_item_enhancement_status(item_url)
+
+                # Same reconciliation as the pre-check. Without it, a record whose detail URL has
+                # moved since it was stored looks new here and gets inserted a second time, since
+                # item_url is the only key and nothing dedups source 4 afterwards.
+                if not enhancement_status.get('exists'):
+                    matched = existing_by_uid.get(breach_record['incident_uid'])
+                    if matched:
+                        logger.info(
+                            f"Reconciling {enhanced_record['organization_name']} by incident_uid "
+                            f"instead of inserting a duplicate under {item_url}"
+                        )
+                        enhancement_status = matched
 
                 if enhancement_status['exists']:
                     # Item exists - check if we should update it with better enhancement data

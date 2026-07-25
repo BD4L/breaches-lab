@@ -66,7 +66,10 @@ jobs:
   california-ag-scraper:
     name: "California AG Scraper"
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # Scheduled runs handle a small rolling window and finish in minutes; 45 catches a hang well
+    # inside the hourly interval. A manual backfill legitimately takes hours at 2-5s of rate
+    # limiting per record, so it gets a much larger budget rather than being killed part-way.
+    timeout-minutes: ${{ github.event_name == 'schedule' && 45 || 330 }}
     needs: pre-scraping-snapshot
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

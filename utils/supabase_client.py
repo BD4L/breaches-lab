@@ -75,42 +75,85 @@ class SupabaseClient:
             logger.error(f"Error checking if item exists for URL {item_url}: {e}")
             return False
 
-    def get_enhancement_status_for_source(self, source_id: int, page_size: int = 1000) -> dict:
+    def get_latest_publication_date(self, source_id: int) -> str:
         """
-        Fetch the enhancement status of every stored item for one source in a single pass,
-        keyed by item_url.
+        Return the newest publication_date stored for a source, or None.
+
+        Scrapers use this as a watermark so a rolling date window can widen to cover downtime
+        instead of letting records reported during an outage fall out of range permanently.
+        One indexed row, so it is cheap enough to call on every run.
+        """
+        try:
+            response = (
+                self.client.table("scraped_items")
+                .select("publication_date")
+                .eq("source_id", source_id)
+                .not_.is_("publication_date", "null")
+                .order("publication_date", desc=True)
+                .limit(1)
+                .execute()
+            )
+            if response.data:
+                return response.data[0].get("publication_date")
+            return None
+        except Exception as e:
+            logger.error(f"Error fetching latest publication_date for source {source_id}: {e}")
+            return None
+
+    def get_enhancement_status_for_source(self, source_id: int, since_date: str = None,
+                                          page_size: int = 1000) -> dict:
+        """
+        Fetch the enhancement status of stored items for one source in a single pass,
+        keyed by item_url. Also returns a secondary index keyed by incident_uid.
 
         This is the batch equivalent of calling get_item_enhancement_status() once per record.
         Scrapers use it to decide, before doing any network enrichment, whether a record is
-        already stored and complete. Doing that per-record cost one round trip per breach and,
-        worse, meant the expensive detail-page and PDF work happened before the check.
+        already stored and complete.
 
-        Returns {} on failure rather than raising, so a caller that cannot reach the database
-        degrades to treating every record as new instead of aborting the run.
+        since_date bounds the read to the caller's working window. It matters: raw_data_json is
+        by far the widest column (it holds the CSV row, the scraped detail page, and per-PDF
+        extracted text), so loading it for all history on every scheduled run would make egress
+        scale with total stored history instead of with the amount of work being done. Callers
+        that filter their input by date should pass the same lower bound here.
+
+        Returns ({}, {}) on failure rather than raising, so a caller that cannot reach the
+        database degrades to treating every record as new instead of aborting the run.
         """
-        items = {}
+        by_url = {}
+        by_incident_uid = {}
         offset = 0
         try:
             while True:
-                response = (
+                query = (
                     self.client.table("scraped_items")
                     .select("id, item_url, raw_data_json, affected_individuals, notice_document_url")
                     .eq("source_id", source_id)
-                    .order("id")
-                    .range(offset, offset + page_size - 1)
-                    .execute()
                 )
+                if since_date:
+                    query = query.gte("publication_date", since_date)
+
+                response = query.order("id").range(offset, offset + page_size - 1).execute()
+
                 rows = response.data or []
                 for item in rows:
-                    items[item["item_url"]] = self._build_enhancement_status(item)
+                    status = self._build_enhancement_status(item)
+                    by_url[item["item_url"]] = status
+                    uid = status.get('incident_uid')
+                    if uid:
+                        by_incident_uid[uid] = status
                 if len(rows) < page_size:
                     break
                 offset += page_size
-            logger.info(f"Loaded enhancement status for {len(items)} existing items (source_id={source_id})")
-            return items
+
+            window = f" since {since_date}" if since_date else " (all history)"
+            logger.info(
+                f"Loaded enhancement status for {len(by_url)} existing items "
+                f"(source_id={source_id}{window})"
+            )
+            return {'by_url': by_url, 'by_incident_uid': by_incident_uid}
         except Exception as e:
             logger.error(f"Error batch-loading enhancement status for source {source_id}: {e}")
-            return {}
+            return {'by_url': {}, 'by_incident_uid': {}}
 
     def _build_enhancement_status(self, item: dict) -> dict:
         """Derive the enhancement-status view of a stored row. Shared by the single and batch paths."""
@@ -119,6 +162,8 @@ class SupabaseClient:
         status = {
             'exists': True,
             'item_id': item['id'],
+            'item_url': item.get('item_url'),
+            'incident_uid': None,
             'has_enhancement_errors': False,
             'has_successful_enhancement': False,
             'has_pdf_analysis': False,
@@ -130,6 +175,10 @@ class SupabaseClient:
 
         tier_2_data = raw_data.get('tier_2_enhanced', {}) if isinstance(raw_data, dict) else {}
         if isinstance(tier_2_data, dict):
+            # Content-derived identity, stable across runs and independent of the scraped URL.
+            # Used to recognise a record whose detail URL has changed, so it is updated in place
+            # rather than inserted again under the new URL.
+            status['incident_uid'] = tier_2_data.get('incident_uid')
             enhancement_errors = tier_2_data.get('enhancement_errors', [])
             if enhancement_errors:
                 status['has_enhancement_errors'] = True
