@@ -276,7 +276,11 @@ CREATE TABLE email_verification_tokens (
 -- AI research jobs table
 CREATE TABLE research_jobs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    scraped_item UUID REFERENCES scraped_items(id) ON DELETE CASCADE,
+    -- BIGINT, not UUID: scraped_items.id is BIGSERIAL. Declaring this UUID made the foreign key
+    -- impossible to create ("incompatible types: uuid and bigint"), so this file could never run
+    -- to completion. breach_id above and database_schema_ai_updates_corrected.sql both already
+    -- use BIGINT for the same reference.
+    scraped_item BIGINT REFERENCES scraped_items(id) ON DELETE CASCADE,
     status TEXT CHECK (status IN ('pending','planned','running','done','failed')) DEFAULT 'pending',
     report_url TEXT,               -- PDF/Markdown stored in Supabase Storage
     requested_by UUID REFERENCES auth.users ON DELETE CASCADE,
